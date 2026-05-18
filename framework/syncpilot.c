@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include <time.h>
+
+#ifdef __linux__
+#include <sched.h>  // Untuk CPU_SET, cpu_set_t, pthread_setaffinity_np
+#endif
 
 // ==========================================
 // Struktur Data Internal Endpoint
@@ -56,6 +61,13 @@ struct PipelineEngine {
     pthread_t t_consumer;
 
     int is_shutting_down;     // Status destroy sinkronisasi internal
+
+    // === IC-RCE: Initial Calibration Runtime Cost Estimation ===
+    double stage_cost_estimates[MAX_STAGES]; // Waktu eksekusi per stage (detik)
+    int    calibration_done;                 // Flag: kalibrasi sudah selesai
+    int    stages_calibrated;                // Counter: berapa stage sudah diukur
+    pthread_mutex_t calib_lock;              // Lock khusus kalibrasi
+    pthread_cond_t  calib_cond;              // Cond untuk sinkronisasi kalibrasi
 };
 
 typedef struct {
@@ -159,9 +171,41 @@ static void* system_worker_thread(void *arg) {
 
         // ====== 1. Pengerjaan Fase (Luar Lock) ======
         StageProcessorFn process_step = engine->config.stages[current_idx];
-        if(process_step) {
-             process_step(my_task);
+
+        if (engine->config.enable_calibration &&
+            my_task->task_id == 0 &&
+            !engine->calibration_done) {
+
+            // === CALIBRATION PHASE: Ukur waktu eksekusi stage ini ===
+            struct timespec cal_start, cal_end;
+            clock_gettime(CLOCK_MONOTONIC, &cal_start);
+
+            if (process_step) {
+                process_step(my_task);
+            }
+
+            clock_gettime(CLOCK_MONOTONIC, &cal_end);
+            double duration = (cal_end.tv_sec - cal_start.tv_sec)
+                            + (cal_end.tv_nsec - cal_start.tv_nsec) / 1e9;
+
+            // Simpan estimasi biaya stage ini (thread-safe)
+            pthread_mutex_lock(&engine->calib_lock);
+            engine->stage_cost_estimates[current_idx] = duration;
+            engine->stages_calibrated++;
+
+            if (engine->stages_calibrated >= engine->config.num_stages) {
+                engine->calibration_done = 1;
+                pthread_cond_broadcast(&engine->calib_cond);
+            }
+            pthread_mutex_unlock(&engine->calib_lock);
+
+        } else {
+            // === PRODUCTION PHASE: Zero overhead, tanpa pengukuran ===
+            if (process_step) {
+                process_step(my_task);
+            }
         }
+
         my_task->current_stage = current_idx + 1; // Elevasi tingkat tahapnya
 
         // ====== 2. Penyelesaian Tuntas atau Lanjut Antrean =======
@@ -227,6 +271,13 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
     pthread_mutex_init(&eng->lock, NULL);
     pthread_cond_init(&eng->cond_work, NULL);
     pthread_cond_init(&eng->cond_space, NULL);
+
+    // Inisialisasi IC-RCE (Initial Calibration)
+    memset(eng->stage_cost_estimates, 0, sizeof(eng->stage_cost_estimates));
+    eng->calibration_done  = 0;
+    eng->stages_calibrated = 0;
+    pthread_mutex_init(&eng->calib_lock, NULL);
+    pthread_cond_init(&eng->calib_cond, NULL);
     
     // Inisialisasi Antrean per Stage
     eng->stage_qs = (StageQueue*)malloc(c->num_stages * sizeof(StageQueue));
@@ -256,6 +307,29 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
         wctx->worker_id = i;
         pthread_create(&eng->workers[i], NULL, system_worker_thread, wctx);
     }
+
+    // === Asymmetric Core Affinity Mapping (khusus Linux) ===
+#ifdef __linux__
+    if (c->enable_affinity && (c->num_big_cores > 0 || c->num_little_cores > 0)) {
+        for (int i = 0; i < c->num_workers; i++) {
+            cpu_set_t cpuset;
+            CPU_ZERO(&cpuset);
+
+            if (i < c->num_big_cores) {
+                // Worker pertama → Big Cores (performa tinggi)
+                CPU_SET(c->big_core_ids[i], &cpuset);
+            } else if (c->num_little_cores > 0) {
+                // Sisanya → Little Cores (efisiensi energi, round-robin)
+                int little_idx = (i - c->num_big_cores) % c->num_little_cores;
+                CPU_SET(c->little_core_ids[little_idx], &cpuset);
+            } else {
+                continue; // Skip jika tidak ada little core terdaftar
+            }
+
+            pthread_setaffinity_np(eng->workers[i], sizeof(cpu_set_t), &cpuset);
+        }
+    }
+#endif
 
     return eng;
 }
@@ -308,5 +382,25 @@ void pipeline_wait_and_destroy(PipelineEngine *engine) {
     pthread_mutex_destroy(&engine->lock);
     pthread_cond_destroy(&engine->cond_work);
     pthread_cond_destroy(&engine->cond_space);
+
+    // Cleanup IC-RCE
+    pthread_mutex_destroy(&engine->calib_lock);
+    pthread_cond_destroy(&engine->calib_cond);
+
     free(engine);
+}
+
+
+// ==========================================
+// API PUBLIC IC-RCE (Calibration Query)
+// ==========================================
+
+const double* pipeline_get_stage_costs(PipelineEngine *engine) {
+    if (!engine || !engine->calibration_done) return NULL;
+    return engine->stage_cost_estimates;
+}
+
+int pipeline_is_calibrated(PipelineEngine *engine) {
+    if (!engine) return 0;
+    return engine->calibration_done;
 }

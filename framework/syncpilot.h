@@ -24,6 +24,9 @@ extern "C" {
 /** Maksimum tahap pipeline/layer yang bisa didaftarkan */
 #define MAX_STAGES 16
 
+/** Maksimum core CPU yang bisa didaftarkan untuk affinity */
+#define MAX_CORES  16
+
 /**
  * Tipe data Item/Tugas Generik yang mengalir dari tahap 1 ke tahap akhir.
  * Developer menyuntikkan struct kastem mereka via `data` (void*).
@@ -64,6 +67,16 @@ typedef struct {
     StageProcessorFn stages[MAX_STAGES]; // Deret fungsi pemroses per blok/tahap
     ConsumerWriterFn consumer;           // Fungsi penulis akhir yang sudah terjamin berurutan (Reorder Buffer)
 
+    // === Asymmetric Core Affinity (Opsional, khusus Linux) ===
+    int enable_affinity;              // 1 = aktifkan core pinning, 0 = biarkan OS scheduler
+    int num_big_cores;                // Jumlah Big core yang tersedia
+    int num_little_cores;             // Jumlah Little core yang tersedia
+    int big_core_ids[MAX_CORES];      // Array ID CPU Big cores
+    int little_core_ids[MAX_CORES];   // Array ID CPU Little cores
+
+    // === Initial Calibration Runtime Cost Estimation (IC-RCE) ===
+    int enable_calibration;           // 1 = ukur biaya stage di task pertama, 0 = skip
+
 } PipelineConfig;
 
 /**
@@ -102,6 +115,24 @@ void pipeline_close_input(PipelineEngine *engine);
  * Kemudian menghancurkan memori Engine (Cleanup).
  */
 void pipeline_wait_and_destroy(PipelineEngine *engine);
+
+/**
+ * Mendapatkan hasil estimasi biaya per-stage dari kalibrasi awal (IC-RCE).
+ * Berguna untuk logging dan analisis performa di paper.
+ *
+ * @param engine Pointer engine
+ * @return Pointer ke array double[num_stages] berisi waktu eksekusi (detik),
+ *         atau NULL jika kalibrasi belum selesai / tidak diaktifkan.
+ */
+const double* pipeline_get_stage_costs(PipelineEngine *engine);
+
+/**
+ * Mengecek apakah fase kalibrasi (IC-RCE) sudah selesai.
+ *
+ * @param engine Pointer engine
+ * @return 1 jika sudah selesai, 0 jika belum/tidak diaktifkan.
+ */
+int pipeline_is_calibrated(PipelineEngine *engine);
 
 
 #ifdef __cplusplus
