@@ -107,6 +107,8 @@ int main() {
 
     // 1. Definisikan Konfigurasi Pipeline
     PipelineConfig cfg;
+    memset(&cfg, 0, sizeof(PipelineConfig)); // PENTING: Bersihkan garbage stack!
+
     cfg.num_workers              = 4;   // Kita pakai 4 Thread Pekerja
     cfg.num_stages               = 3;   // Decode, Motion, Encode
     cfg.total_tasks              = total_frames; 
@@ -119,6 +121,9 @@ int main() {
     
     // Hubungkan Consumer Penulis
     cfg.consumer  = final_writer;
+
+    // === Fitur Baru: IC-RCE ===
+    cfg.enable_calibration = 1; // Aktifkan kalibrasi awal (mengukur durasi per tahap)
 
     // 2. Start Engine Load Balancer Asinkron
     PipelineEngine *engine = pipeline_start(&cfg);
@@ -143,6 +148,18 @@ int main() {
 
     // 5. Tunggu semuanya selesai dan bersihkan memori
     pipeline_wait_and_destroy(engine);
+
+    // Tampilkan hasil kalibrasi IC-RCE
+    if (pipeline_is_calibrated(engine)) {
+        const double *costs = pipeline_get_stage_costs(engine);
+        printf("\n==================================================\n");
+        printf("🔥 [IC-RCE] HASIL ESTIMASI BIAYA PER-STAGE ENCODER MOCK\n");
+        printf("==================================================\n");
+        printf("Tahap 0 (Decode): %0.6f detik\n", costs[0]);
+        printf("Tahap 1 (Motion): %0.6f detik\n", costs[1]);
+        printf("Tahap 2 (Encode): %0.6f detik\n", costs[2]);
+        printf("==================================================\n");
+    }
 
     printf("\n=== PROSES RENDER SELESAI ===\n");
     return 0;

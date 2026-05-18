@@ -287,6 +287,8 @@ int main(int argc, char *argv[]) {
     // 🔥 INISIALISASI SYNCPILOT FRAMEWORK 🔥
     // ==============================================================
     PipelineConfig cfg;
+    memset(&cfg, 0, sizeof(PipelineConfig)); // PENTING: Bersihkan garbage stack!
+
     cfg.num_workers              = 8;   // 8 pekerja paralel 
     cfg.num_stages               = 8;   // 8 layer FSRCNN
     cfg.total_tasks              = numFrames;
@@ -302,6 +304,20 @@ int main(int argc, char *argv[]) {
     cfg.stages[7] = cb_layer8;
 
     cfg.consumer = fsrcnn_consumer_writer; // Consumer Pengurut Akhir!
+
+    // === Fitur Baru: IC-RCE & Asymmetric Core Affinity ===
+    cfg.enable_calibration = 1; // Aktifkan Kalibrasi Awal (Ukur durasi per-layer pada frame 1)
+
+#ifdef __linux__
+    cfg.enable_affinity = 1;    // Aktifkan Core Pinning di Linux (Orange Pi 5)
+    cfg.num_big_cores   = 4;
+    cfg.num_little_cores = 4;
+    // Pemetaan CPU RK3588 (Orange Pi 5): Core 0-3 Little Cores, Core 4-7 Big Cores
+    int big_cores[] = {4, 5, 6, 7};
+    int little_cores[] = {0, 1, 2, 3};
+    memcpy(cfg.big_core_ids, big_cores, sizeof(big_cores));
+    memcpy(cfg.little_core_ids, little_cores, sizeof(little_cores));
+#endif
 
     printf("Memulai Engine SyncPilot...\n");
     PipelineEngine *engine = pipeline_start(&cfg);
@@ -337,6 +353,18 @@ int main(int argc, char *argv[]) {
 
     // ========== Tunggu semua worker selesai ==========
     pipeline_wait_and_destroy(engine);
+
+    // Tampilkan hasil kalibrasi IC-RCE untuk bahan Analisis/Paper
+    if (pipeline_is_calibrated(engine)) {
+        const double *costs = pipeline_get_stage_costs(engine);
+        printf("\n==================================================\n");
+        printf("🔥 [IC-RCE] HASIL ESTIMASI BIAYA PER-STAGE/LAYER FSRCNN\n");
+        printf("==================================================\n");
+        for (int i = 0; i < cfg.num_stages; i++) {
+            printf("Layer %d: %0.6f detik\n", i + 1, costs[i]);
+        }
+        printf("==================================================\n\n");
+    }
 
     printf("Pipeline SyncPilot selesai, %d frame ditulis ke disk.\n", g_frames_out);
 
