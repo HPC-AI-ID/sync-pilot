@@ -309,14 +309,7 @@ int main(int argc, char *argv[]) {
     cfg.enable_calibration = 1; // Aktifkan Kalibrasi Awal (Ukur durasi per-layer pada frame 1)
 
 #ifdef __linux__
-    cfg.enable_affinity = 1;    // Aktifkan Core Pinning di Linux (Orange Pi 5)
-    cfg.num_big_cores   = 4;
-    cfg.num_little_cores = 4;
-    // Pemetaan CPU RK3588 (Orange Pi 5): Core 0-3 Little Cores, Core 4-7 Big Cores
-    int big_cores[] = {4, 5, 6, 7};
-    int little_cores[] = {0, 1, 2, 3};
-    memcpy(cfg.big_core_ids, big_cores, sizeof(big_cores));
-    memcpy(cfg.little_core_ids, little_cores, sizeof(little_cores));
+    cfg.enable_affinity = 1;    // Aktifkan Core Pinning otomatis di Linux (Orange Pi 5 dll. secara Zero-Config)
 #endif
 
     printf("Memulai Engine SyncPilot...\n");

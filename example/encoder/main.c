@@ -122,8 +122,11 @@ int main() {
     // Hubungkan Consumer Penulis
     cfg.consumer  = final_writer;
 
-    // === Fitur Baru: IC-RCE ===
+    // === Fitur Baru: IC-RCE & Asymmetric Core Affinity ===
     cfg.enable_calibration = 1; // Aktifkan kalibrasi awal (mengukur durasi per tahap)
+#ifdef __linux__
+    cfg.enable_affinity = 1;    // Aktifkan Core Pinning otomatis di Linux
+#endif
 
     // 2. Start Engine Load Balancer Asinkron
     PipelineEngine *engine = pipeline_start(&cfg);

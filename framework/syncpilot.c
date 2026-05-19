@@ -310,20 +310,85 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
 
     // === Asymmetric Core Affinity Mapping (khusus Linux) ===
 #ifdef __linux__
-    if (c->enable_affinity && (c->num_big_cores > 0 || c->num_little_cores > 0)) {
+    if (c->enable_affinity) {
+        int auto_big_cores[MAX_CORES];
+        int auto_little_cores[MAX_CORES];
+        int num_big = c->num_big_cores;
+        int num_little = c->num_little_cores;
+
+        // Salin konfigurasi manual jika disediakan oleh pengguna
+        if (num_big > 0 || num_little > 0) {
+            memcpy(auto_big_cores, c->big_core_ids, num_big * sizeof(int));
+            memcpy(auto_little_cores, c->little_core_ids, num_little * sizeof(int));
+        } else {
+            // DETEKSI OTOMATIS: Scan topologi frekuensi CPU Linux
+            int n_cpus = sysconf(_SC_NPROCESSORS_ONLN);
+            if (n_cpus > MAX_CORES) n_cpus = MAX_CORES;
+
+            long max_freqs[MAX_CORES];
+            long highest_freq = 0;
+            long lowest_freq = -1;
+            int has_freq = 0;
+
+            for (int i = 0; i < n_cpus; i++) {
+                char path[128];
+                snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_max_freq", i);
+                FILE *f = fopen(path, "r");
+                if (f) {
+                    long freq = 0;
+                    if (fscanf(f, "%ld", &freq) == 1) {
+                        max_freqs[i] = freq;
+                        has_freq = 1;
+                        if (freq > highest_freq) highest_freq = freq;
+                        if (lowest_freq == -1 || freq < lowest_freq) lowest_freq = freq;
+                    } else {
+                        max_freqs[i] = 0;
+                    }
+                    fclose(f);
+                } else {
+                    max_freqs[i] = 0;
+                }
+            }
+
+            num_big = 0;
+            num_little = 0;
+
+            if (has_freq && highest_freq > lowest_freq) {
+                // Arsitektur Asimetris Terdeteksi! (big.LITTLE)
+                // Core dengan frekuensi tertinggi = Big Cores
+                for (int i = 0; i < n_cpus; i++) {
+                    if (max_freqs[i] == highest_freq) {
+                        auto_big_cores[num_big++] = i;
+                    } else {
+                        auto_little_cores[num_little++] = i;
+                    }
+                }
+            } else {
+                // Arsitektur Homogen atau pembacaan frekuensi gagal: Split 50/50
+                for (int i = 0; i < n_cpus; i++) {
+                    if (i < n_cpus / 2) {
+                        auto_big_cores[num_big++] = i;
+                    } else {
+                        auto_little_cores[num_little++] = i;
+                    }
+                }
+            }
+        }
+
+        // Terapkan Affinity Pinning menggunakan hasil deteksi
         for (int i = 0; i < c->num_workers; i++) {
             cpu_set_t cpuset;
             CPU_ZERO(&cpuset);
 
-            if (i < c->num_big_cores) {
-                // Worker pertama → Big Cores (performa tinggi)
-                CPU_SET(c->big_core_ids[i], &cpuset);
-            } else if (c->num_little_cores > 0) {
-                // Sisanya → Little Cores (efisiensi energi, round-robin)
-                int little_idx = (i - c->num_big_cores) % c->num_little_cores;
-                CPU_SET(c->little_core_ids[little_idx], &cpuset);
+            if (num_big > 0 && i < num_big) {
+                // Thread-thread pertama dialokasikan ke Big Cores
+                CPU_SET(auto_big_cores[i], &cpuset);
+            } else if (num_little > 0) {
+                // Sisanya dialokasikan ke Little Cores secara round-robin
+                int little_idx = (i - num_big) % num_little;
+                CPU_SET(auto_little_cores[little_idx], &cpuset);
             } else {
-                continue; // Skip jika tidak ada little core terdaftar
+                continue;
             }
 
             pthread_setaffinity_np(eng->workers[i], sizeof(cpu_set_t), &cpuset);
