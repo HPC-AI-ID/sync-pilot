@@ -132,12 +132,23 @@ static void* system_worker_thread(void *arg) {
 
         // Loop Prioritas: Cari stage tertinggi dlu
         while (!engine->shutdown) {
-            // Prioritas antrean dr Stage Terakhir s.d Stage Awal (Mencegah Deadlock Bottleneck)
-            for (int stage_id = num_stages - 1; stage_id >= 0; stage_id--) {
-                my_task = sq_pop(&engine->stage_qs[stage_id]);
-                if (my_task) {
-                    current_idx = stage_id;
-                    break;
+            if (engine->config.enable_static_pipeline) {
+                // Static Pipeline: Worker only pops from its dedicated stage
+                int stage_id = ctx->worker_id;
+                if (stage_id < num_stages) {
+                    my_task = sq_pop(&engine->stage_qs[stage_id]);
+                    if (my_task) {
+                        current_idx = stage_id;
+                    }
+                }
+            } else {
+                // Prioritas antrean dr Stage Terakhir s.d Stage Awal (Mencegah Deadlock Bottleneck)
+                for (int stage_id = num_stages - 1; stage_id >= 0; stage_id--) {
+                    my_task = sq_pop(&engine->stage_qs[stage_id]);
+                    if (my_task) {
+                        current_idx = stage_id;
+                        break;
+                    }
                 }
             }
 

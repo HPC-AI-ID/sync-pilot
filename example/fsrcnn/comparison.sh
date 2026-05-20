@@ -1,11 +1,11 @@
 #!/bin/bash
 ###############################################################################
-# comparation.sh - FSRCNN Performance Comparison Script
+# comparison.sh - FSRCNN Performance & Energy Comparison Script
 # 
-# Menguji seluruh executable FSRCNN di folder ini dengan input yang sama
-# dan membandingkan: waktu eksekusi, ukuran output, dan PSNR.
+# Menguji skenario A, B, C, D FSRCNN dengan input yang sama,
+# mengukur waktu eksekusi, throughput, konsumsi daya (PowerTop), dan PSNR.
 #
-# Usage: bash comparation.sh
+# Usage: bash comparison.sh
 ###############################################################################
 
 set -e
@@ -26,39 +26,105 @@ OUT_HEIGHT=$((HEIGHT * 2))
 # Jumlah iterasi untuk rata-rata waktu
 NUM_RUNS=3
 
-# Daftar executable FSRCNN yang akan diuji
-EXECUTABLES=(
-    "fsrcnn_baseline"
-    "fsrcnn_syncpilot"
+# Total frames
+TOTAL_FRAMES=150
+
+# Skenario Percobaan
+SCENARIOS=(
+    "A"
+    "B"
+    "C"
+    "D"
 )
 
-# Label untuk setiap executable (untuk display)
 LABELS=(
-    "Baseline"
-    "SyncPilot"
+    "A (Static Pipeline, 8 thr)"
+    "B (SyncPilot, 4 workers)"
+    "C (SyncPilot, 8 workers)"
+    "D (SyncPilot, 12 workers)"
 )
 
-# ===================== VALIDASI =====================
+# Konfigurasi argumen untuk fsrcnn_syncpilot: <num_workers> <enable_static_pipeline>
+SCENARIO_WORKERS=(8 4 8 12)
+SCENARIO_STATIC=(1 0 0 0)
+
+# ===================== KOMPILASI =====================
+echo "============================================================================="
+echo "                          KOMPILASI EXECUTABLE"
+echo "============================================================================="
+CC="gcc-15"
+if ! command -v gcc-15 &> /dev/null; then
+    CC="gcc"
+fi
+echo "Using compiler: $CC"
+$CC -O3 -fopenmp -o "${SCRIPT_DIR}/fsrcnn_baseline" "${SCRIPT_DIR}/fsrcnn_baseline.c" -lm
+$CC -O3 -fopenmp -o "${SCRIPT_DIR}/fsrcnn_syncpilot" "${SCRIPT_DIR}/fsrcnn_syncpilot.c" "${SCRIPT_DIR}/../../framework/syncpilot.c" -lpthread -lm
+echo "Kompilasi selesai."
+echo ""
+
+# ===================== VALIDASI INPUT =====================
 if [ ! -f "$INPUT_PATH" ]; then
     echo "ERROR: Input file '${INPUT_FILE}' tidak ditemukan di ${SCRIPT_DIR}"
     exit 1
 fi
 
-for exe in "${EXECUTABLES[@]}"; do
-    if [ ! -f "${SCRIPT_DIR}/${exe}" ]; then
-        echo "ERROR: Executable '${exe}' tidak ditemukan di ${SCRIPT_DIR}"
-        exit 1
+# ===================== CEK POWEROP =====================
+HAS_POWER=0
+if command -v powertop &> /dev/null; then
+    # Cek apakah running sebagai root/sudo
+    if [ "$EUID" -eq 0 ] || sudo -n true 2>/dev/null; then
+        HAS_POWER=1
+        echo "PowerTop terdeteksi dan memiliki akses root/sudo. Pengukuran energi aktif."
+    else
+        echo "WARNING: PowerTop ditemukan tetapi membutuhkan hak akses root/sudo."
+        echo "Silakan jalankan script ini dengan 'sudo bash comparison.sh' untuk mengaktifkan pengukuran energi."
     fi
-    if [ ! -x "${SCRIPT_DIR}/${exe}" ]; then
-        echo "WARNING: '${exe}' tidak executable, menambahkan permission..."
-        chmod +x "${SCRIPT_DIR}/${exe}"
-    fi
-done
+else
+    echo "WARNING: PowerTop tidak ditemukan. Pengukuran energi dinonaktifkan."
+fi
+echo ""
 
 # ===================== FUNGSI UTILITAS =====================
 
-# Fungsi untuk menghitung PSNR antara dua file YUV
-# Menggunakan perbandingan byte-level sederhana
+# Fungsi untuk mengekstrak daya dari CSV PowerTop
+extract_power() {
+    local csv_file="$1"
+    if [ ! -f "$csv_file" ]; then
+        echo "0"
+        return
+    fi
+    local line
+    line=$(grep -i "System baseline power" "$csv_file" | head -n 1)
+    if [ -z "$line" ]; then
+        line=$(grep -i -E "system is using|baseline power" "$csv_file" | head -n 1)
+    fi
+    if [ -z "$line" ]; then
+        echo "0"
+        return
+    fi
+    
+    local power_val
+    power_val=$(echo "$line" | grep -oE '[0-9]+(\.[0-9]+)?\s*(W|mW|uW|µW|Watts)' | head -n 1)
+    if [ -z "$power_val" ]; then
+        power_val=$(echo "$line" | grep -oE '[0-9]+\.[0-9]+' | head -n 1)
+        if [ -z "$power_val" ]; then
+            power_val=$(echo "$line" | grep -oE '[0-9]+' | head -n 1)
+        fi
+        echo "$power_val"
+        return
+    fi
+    
+    local num
+    num=$(echo "$power_val" | grep -oE '[0-9]+(\.[0-9]+)?')
+    if echo "$power_val" | grep -i -q "mW"; then
+        awk "BEGIN {print $num / 1000}"
+    elif echo "$power_val" | grep -i -q -E "uW|µW"; then
+        awk "BEGIN {print $num / 1000000}"
+    else
+        echo "$num"
+    fi
+}
+
 calculate_psnr() {
     local file1="$1"
     local file2="$2"
@@ -68,9 +134,7 @@ calculate_psnr() {
         return
     fi
     
-    # Cek apakah ffmpeg tersedia untuk PSNR
     if command -v ffmpeg &> /dev/null; then
-        # Gunakan ffmpeg untuk menghitung PSNR
         local psnr_output
         psnr_output=$(ffmpeg -s ${OUT_WIDTH}x${OUT_HEIGHT} -pix_fmt yuv420p -i "$file1" \
                              -s ${OUT_WIDTH}x${OUT_HEIGHT} -pix_fmt yuv420p -i "$file2" \
@@ -86,16 +150,13 @@ calculate_psnr() {
     fi
 }
 
-# Fungsi untuk mendapatkan waktu eksekusi dalam milidetik
 get_time_ms() {
     if [[ "$(uname)" == "Darwin" ]]; then
-        # macOS: gunakan gdate jika tersedia, atau python
         if command -v gdate &> /dev/null; then
             echo $(($(gdate +%s%N) / 1000000))
         elif command -v python3 &> /dev/null; then
             python3 -c "import time; print(int(time.time() * 1000))"
         else
-            # Fallback: gunakan detik saja
             echo $(($(date +%s) * 1000))
         fi
     else
@@ -103,82 +164,146 @@ get_time_ms() {
     fi
 }
 
-# ===================== HEADER REPORT =====================
-echo "============================================================================="
-echo "              FSRCNN PERFORMANCE COMPARISON REPORT"
-echo "============================================================================="
-echo ""
-echo "Tanggal        : $(date '+%Y-%m-%d %H:%M:%S')"
-echo "Input File     : ${INPUT_FILE}"
-echo "Input Size     : $(du -h "$INPUT_PATH" | awk '{print $1}')"
-echo "Resolusi Input : ${WIDTH}x${HEIGHT} (QCIF)"
-echo "Resolusi Output: ${OUT_WIDTH}x${OUT_HEIGHT}"
-echo "Jumlah Iterasi : ${NUM_RUNS} (untuk rata-rata waktu)"
-echo "OS             : $(uname -s) $(uname -m)"
-echo ""
+# ===================== PENGUKURAN IDLE POWER =====================
+POWER_IDLE=0
+if [ $HAS_POWER -eq 1 ]; then
+    echo ">> Mengukur daya IDLE sistem selama 5 detik sebagai baseline..."
+    sudo powertop --csv="${SCRIPT_DIR}/powertop_idle.csv" --time=5 >/dev/null 2>&1 || true
+    POWER_IDLE=$(extract_power "${SCRIPT_DIR}/powertop_idle.csv")
+    echo "   Daya Idle Sistem: $POWER_IDLE W"
+    echo ""
+fi
 
-# ===================== EKSEKUSI & PENGUKURAN =====================
-
-# Array untuk menyimpan hasil
-declare -a TIMES_AVG
-declare -a TIMES_MIN
-declare -a TIMES_MAX
-declare -a OUTPUT_SIZES
-declare -a OUTPUT_FILES
-
-# Buat ground truth dari baseline (eksekusi pertama baseline sebagai referensi)
+# ===================== GROUND TRUTH GENERATION =====================
 GROUND_TRUTH="${SCRIPT_DIR}/output_baseline_ground_truth.yuv"
-echo ">> Membuat ground truth dari Baseline..."
-"${SCRIPT_DIR}/fsrcnn_baseline" "$INPUT_PATH" "$GROUND_TRUTH"
-echo "   Ground truth: $(du -h "$GROUND_TRUTH" | awk '{print $1}')"
+echo ">> Membuat ground truth dari Baseline (fsrcnn_baseline)..."
+"${SCRIPT_DIR}/fsrcnn_baseline" "$INPUT_PATH" "$GROUND_TRUTH" > /dev/null 2>&1
+echo "   Ground truth selesai: $(du -h "$GROUND_TRUTH" | awk '{print $1}')"
 echo ""
 
+# ===================== EKSEKUSI SKENARIO =====================
 echo "============================================================================="
 echo "                         MENJALANKAN BENCHMARK"
 echo "============================================================================="
 echo ""
 
-for i in "${!EXECUTABLES[@]}"; do
-    exe="${EXECUTABLES[$i]}"
+declare -a TIMES_AVG
+declare -a TIMES_MIN
+declare -a TIMES_MAX
+declare -a OUTPUT_SIZES
+declare -a OUTPUT_FILES
+declare -a POWERS
+declare -a ENERGIES
+
+for i in "${!SCENARIOS[@]}"; do
+    scen="${SCENARIOS[$i]}"
     label="${LABELS[$i]}"
-    output_file="${SCRIPT_DIR}/output_${exe}.yuv"
+    workers="${SCENARIO_WORKERS[$i]}"
+    is_static="${SCENARIO_STATIC[$i]}"
+    
+    output_file="${SCRIPT_DIR}/output_scenario_${scen}.yuv"
     OUTPUT_FILES[$i]="$output_file"
     
     echo "---------------------------------------------------------------------"
-    echo "[$((i+1))/${#EXECUTABLES[@]}] Testing: ${label}"
-    echo "     Executable: ${exe}"
+    echo "Skenario ${label}"
+    echo "     Config: workers=${workers}, static_mode=${is_static}"
     echo "---------------------------------------------------------------------"
     
     total_time=0
     min_time=999999999
     max_time=0
     
-    for run in $(seq 1 $NUM_RUNS); do
-        # Hapus output sebelumnya
-        rm -f "$output_file"
-        
-        # Ukur waktu eksekusi
-        start_time=$(get_time_ms)
-        "${SCRIPT_DIR}/${exe}" "$INPUT_PATH" "$output_file" > /dev/null 2>&1
-        end_time=$(get_time_ms)
-        
-        elapsed=$((end_time - start_time))
-        total_time=$((total_time + elapsed))
-        
-        if [ $elapsed -lt $min_time ]; then
-            min_time=$elapsed
-        fi
-        if [ $elapsed -gt $max_time ]; then
-            max_time=$elapsed
-        fi
-        
-        printf "     Run %d/%d: %d ms\n" "$run" "$NUM_RUNS" "$elapsed"
-    done
+    # 1. Run 1 (Dry-run / time profiling & PowerTop measurement)
+    rm -f "$output_file"
     
+    start_time=$(get_time_ms)
+    "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" "$is_static" > /dev/null 2>&1
+    end_time=$(get_time_ms)
+    
+    t1=$((end_time - start_time))
+    total_time=$((total_time + t1))
+    min_time=$t1
+    max_time=$t1
+    printf "     Run 1/3 (Profil): %d ms\n" "$t1"
+    
+    # Hitung waktu powertop yang aman berdasarkan run 1
+    t_power_sec=$((t1 / 1000 + 4))
+    if [ $t_power_sec -lt 5 ]; then
+        t_power_sec=5
+    fi
+    
+    # 2. Run 2 (PowerTop measured run)
+    rm -f "$output_file"
+    
+    if [ $HAS_POWER -eq 1 ]; then
+        printf "     Memulai PowerTop (%d detik)...\n" "$t_power_sec"
+        sudo powertop --csv="${SCRIPT_DIR}/powertop_${scen}.csv" --time="$t_power_sec" >/dev/null 2>&1 &
+        POWER_PID=$!
+        sleep 1
+    fi
+    
+    start_time=$(get_time_ms)
+    "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" "$is_static" > /dev/null 2>&1
+    end_time=$(get_time_ms)
+    
+    t2=$((end_time - start_time))
+    total_time=$((total_time + t2))
+    [ $t2 -lt $min_time ] && min_time=$t2
+    [ $t2 -gt $max_time ] && max_time=$t2
+    printf "     Run 2/3 (Power) : %d ms\n" "$t2"
+    
+    if [ $HAS_POWER -eq 1 ]; then
+        wait $POWER_PID || true
+        # Ekstrak daya rata-rata
+        p_avg=$(extract_power "${SCRIPT_DIR}/powertop_${scen}.csv")
+        POWERS[$i]=$p_avg
+    else
+        POWERS[$i]=0
+    fi
+    
+    # 3. Run 3 (Normal run)
+    rm -f "$output_file"
+    
+    start_time=$(get_time_ms)
+    "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" "$is_static" > /dev/null 2>&1
+    end_time=$(get_time_ms)
+    
+    t3=$((end_time - start_time))
+    total_time=$((total_time + t3))
+    [ $t3 -lt $min_time ] && min_time=$t3
+    [ $t3 -gt $max_time ] && max_time=$t3
+    printf "     Run 3/3 (Normal): %d ms\n" "$t3"
+    
+    # Hitung rata-rata
     avg_time=$((total_time / NUM_RUNS))
     TIMES_AVG[$i]=$avg_time
     TIMES_MIN[$i]=$min_time
     TIMES_MAX[$i]=$max_time
+    
+    # Hitung daya & energi
+    if [ $HAS_POWER -eq 1 ]; then
+        p_avg=${POWERS[$i]}
+        p_net=$(awk "BEGIN {print $p_avg - $POWER_IDLE}")
+        # Cegah nilai negatif
+        if (( $(awk "BEGIN {print ($p_net < 0) ? 1 : 0}") )); then
+            p_net=0
+        fi
+        # Energi Net = Daya Net * Durasi PowerTop
+        e_net=$(awk "BEGIN {print $p_net * $t_power_sec}")
+        
+        # Waktu eksekusi rata-rata dalam detik
+        avg_sec=$(awk "BEGIN {print $avg_time / 1000}")
+        # Estimasi daya rata-rata sistem saat eksekusi
+        p_exec=$(awk "BEGIN {print $POWER_IDLE + ($e_net / $avg_sec)}")
+        # Energi eksekusi total (Joule)
+        e_exec=$(awk "BEGIN {print $p_exec * $avg_sec}")
+        
+        POWERS[$i]=$(awk "BEGIN {printf \"%.2f\", $p_exec}")
+        ENERGIES[$i]=$(awk "BEGIN {printf \"%.2f\", $e_exec}")
+    else
+        POWERS[$i]="N/A"
+        ENERGIES[$i]="N/A"
+    fi
     
     # Ukuran output
     if [ -f "$output_file" ]; then
@@ -189,25 +314,23 @@ for i in "${!EXECUTABLES[@]}"; do
     
     echo ""
     printf "     Rata-rata : %d ms\n" "$avg_time"
-    printf "     Minimum   : %d ms\n" "$min_time"
-    printf "     Maximum   : %d ms\n" "$max_time"
-    printf "     Output    : %s bytes\n" "${OUTPUT_SIZES[$i]}"
+    printf "     Daya      : %s W\n" "${POWERS[$i]}"
+    printf "     Energi    : %s J\n" "${ENERGIES[$i]}"
     echo ""
 done
 
-# ===================== PSNR COMPARISON =====================
+# ===================== MENGHITUNG PSNR =====================
 echo "============================================================================="
 echo "                       MENGHITUNG PSNR"
 echo "============================================================================="
 echo ""
 
 declare -a PSNR_VALUES
-
-for i in "${!EXECUTABLES[@]}"; do
+for i in "${!SCENARIOS[@]}"; do
     label="${LABELS[$i]}"
     output_file="${OUTPUT_FILES[$i]}"
     
-    printf "  Menghitung PSNR: %-35s ... " "${label}"
+    printf "  Menghitung PSNR: %-30s ... " "${label}"
     psnr=$(calculate_psnr "$GROUND_TRUTH" "$output_file")
     PSNR_VALUES[$i]="$psnr"
     echo "$psnr dB"
@@ -221,30 +344,26 @@ echo "==========================================================================
 echo ""
 
 # Header tabel
-printf "%-35s | %10s | %10s | %10s | %12s | %10s\n" \
-    "Metode" "Avg (ms)" "Min (ms)" "Max (ms)" "Output (B)" "PSNR (dB)"
-printf "%-35s-+-%10s-+-%10s-+-%10s-+-%12s-+-%10s\n" \
-    "-----------------------------------" "----------" "----------" "----------" "------------" "----------"
+printf "%-30s | %10s | %10s | %10s | %15s | %12s | %10s | %10s\n" \
+    "Skenario" "Avg (ms)" "Min (ms)" "Max (ms)" "Throughput(fps)" "Avg Power(W)" "Energy (J)" "PSNR (dB)"
+printf "%-30s-+-%10s-+-%10s-+-%10s-+-%15s-+-%12s-+-%10s-+-%10s\n" \
+    "------------------------------" "----------" "----------" "----------" "---------------" "------------" "----------" "----------"
 
-# Cari waktu tercepat untuk speedup
-fastest=${TIMES_AVG[0]}
-for t in "${TIMES_AVG[@]}"; do
-    if [ "$t" -lt "$fastest" ]; then
-        fastest=$t
-    fi
-done
-
-for i in "${!EXECUTABLES[@]}"; do
+for i in "${!SCENARIOS[@]}"; do
     label="${LABELS[$i]}"
-    printf "%-35s | %10d | %10d | %10d | %12s | %10s\n" \
+    avg=${TIMES_AVG[$i]}
+    throughput=$(awk "BEGIN {printf \"%.2f\", ($TOTAL_FRAMES * 1000) / $avg}")
+    
+    printf "%-30s | %10d | %10d | %10d | %15s | %12s | %10s | %10s\n" \
         "${label}" \
         "${TIMES_AVG[$i]}" \
         "${TIMES_MIN[$i]}" \
         "${TIMES_MAX[$i]}" \
-        "${OUTPUT_SIZES[$i]}" \
+        "${throughput}" \
+        "${POWERS[$i]}" \
+        "${ENERGIES[$i]}" \
         "${PSNR_VALUES[$i]}"
 done
-
 echo ""
 
 # ===================== SPEEDUP ANALYSIS =====================
@@ -253,25 +372,21 @@ echo "                       ANALISIS SPEEDUP"
 echo "============================================================================="
 echo ""
 
-# Gunakan baseline dari index 0
-baseline=${TIMES_AVG[0]}
+baseline_time=${TIMES_AVG[0]}
+printf "Baseline (Skenario A): %s (%d ms)\n\n" "${LABELS[0]}" "$baseline_time"
+printf "%-30s | %12s | %s\n" "Skenario" "Speedup" "Keterangan"
+printf "%-30s-+-%12s-+-%s\n" "------------------------------" "------------" "--------------------"
 
-printf "Baseline: %s (%d ms)\n\n" "${LABELS[0]}" "$baseline"
-printf "%-35s | %12s | %s\n" "Metode" "Speedup" "Keterangan"
-printf "%-35s-+-%12s-+-%s\n" "-----------------------------------" "------------" "--------------------"
-
-for i in "${!EXECUTABLES[@]}"; do
+for i in "${!SCENARIOS[@]}"; do
     label="${LABELS[$i]}"
     avg=${TIMES_AVG[$i]}
     
     if [ "$avg" -gt 0 ]; then
-        # Hitung speedup dengan 2 desimal menggunakan awk
-        speedup=$(awk "BEGIN {printf \"%.2f\", $baseline / $avg}")
-        
+        speedup=$(awk "BEGIN {printf \"%.2f\", $baseline_time / $avg}")
         if (( $(awk "BEGIN {print ($speedup >= 1.0) ? 1 : 0}") )); then
             keterangan="${speedup}x lebih cepat"
         else
-            slowdown=$(awk "BEGIN {printf \"%.2f\", $avg / $baseline}")
+            slowdown=$(awk "BEGIN {printf \"%.2f\", $avg / $baseline_time}")
             keterangan="${slowdown}x lebih lambat"
         fi
     else
@@ -279,44 +394,33 @@ for i in "${!EXECUTABLES[@]}"; do
         keterangan="Error"
     fi
     
-    printf "%-35s | %12s | %s\n" "${label}" "${speedup}x" "$keterangan"
+    printf "%-30s | %12s | %s\n" "${label}" "${speedup}x" "$keterangan"
 done
-
 echo ""
 
-# ===================== OUTPUT CONSISTENCY CHECK =====================
+# ===================== CEK KONSISTENSI =====================
 echo "============================================================================="
 echo "                    CEK KONSISTENSI OUTPUT"
 echo "============================================================================="
 echo ""
-
-echo "Membandingkan output setiap metode dengan ground truth (Baseline)..."
-echo ""
-
-for i in "${!EXECUTABLES[@]}"; do
+for i in "${!SCENARIOS[@]}"; do
     label="${LABELS[$i]}"
     output_file="${OUTPUT_FILES[$i]}"
     
     if [ -f "$output_file" ] && [ -f "$GROUND_TRUTH" ]; then
         if cmp -s "$GROUND_TRUTH" "$output_file"; then
-            printf "  %-35s : IDENTIK ✓\n" "${label}"
+            printf "  %-30s : IDENTIK ✓\n" "${label}"
         else
             diff_bytes=$(cmp -l "$GROUND_TRUTH" "$output_file" 2>/dev/null | wc -l | tr -d ' ')
-            printf "  %-35s : BERBEDA ✗ (%s bytes berbeda)\n" "${label}" "$diff_bytes"
+            printf "  %-30s : BERBEDA ✗ (%s bytes berbeda)\n" "${label}" "$diff_bytes"
         fi
     else
-        printf "  %-35s : FILE TIDAK DITEMUKAN\n" "${label}"
+        printf "  %-30s : FILE TIDAK DITEMUKAN\n" "${label}"
     fi
 done
-
 echo ""
+
 echo "============================================================================="
 echo "                       BENCHMARK SELESAI"
 echo "============================================================================="
-echo ""
-echo "Output files tersimpan di: ${SCRIPT_DIR}/"
-for i in "${!EXECUTABLES[@]}"; do
-    echo "  - output_${EXECUTABLES[$i]}.yuv"
-done
-echo "  - output_baseline_ground_truth.yuv (ground truth)"
 echo ""
