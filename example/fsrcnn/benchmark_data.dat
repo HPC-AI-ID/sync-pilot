@@ -1,0 +1,5 @@
+# Skenario Time_ms Throughput_fps
+"A (Static, 8t)" 2612 57.43
+"B (SyncPilot, 4w)" 2537 59.12
+"C (SyncPilot, 8w)" 2337 64.18
+"D (SyncPilot, 12w)" 2586 58.00

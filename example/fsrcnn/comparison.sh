@@ -420,6 +420,42 @@ for i in "${!SCENARIOS[@]}"; do
 done
 echo ""
 
+# ===================== GENERATOR DATA GNUPLOT DILANJUTKAN AUTOMATIS =====================
+echo "============================================================================="
+echo "                  MENULIS DATA & MEMBUAT GRAFIK (GNUPLOT)"
+echo "============================================================================="
+echo ""
+DAT_FILE="${SCRIPT_DIR}/benchmark_data.dat"
+echo "# Skenario Time_ms Throughput_fps" > "$DAT_FILE"
+
+for i in "${!SCENARIOS[@]}"; do
+    scen="${SCENARIOS[$i]}"
+    workers="${SCENARIO_WORKERS[$i]}"
+    is_static="${SCENARIO_STATIC[$i]}"
+    avg=${TIMES_AVG[$i]}
+    throughput=$(awk "BEGIN {printf \"%.2f\", ($TOTAL_FRAMES * 1000) / $avg}")
+
+    if [ "$is_static" -eq 1 ]; then
+        short_label="${scen} (Static, ${workers}t)"
+    else
+        short_label="${scen} (SyncPilot, ${workers}w)"
+    fi
+
+    echo "\"$short_label\" $avg $throughput" >> "$DAT_FILE"
+done
+echo "  [✓] File data gnuplot berhasil diperbarui di: $DAT_FILE"
+
+if command -v gnuplot &> /dev/null; then
+    # Masuk ke folder script agar gambar output tersimpan di sana
+    cd "$SCRIPT_DIR"
+    gnuplot plot_results.gp
+    echo "  [✓] Grafik throughput (fsrcnn_throughput.png) dan waktu (fsrcnn_time.png) berhasil digenerate!"
+else
+    echo "  [!] WARNING: gnuplot tidak ditemukan di sistem Anda."
+    echo "      Silakan install gnuplot atau jalankan secara manual menggunakan file plot_results.gp"
+fi
+echo ""
+
 echo "============================================================================="
 echo "                       BENCHMARK SELESAI"
 echo "============================================================================="
