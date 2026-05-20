@@ -1,9 +1,12 @@
+#define _GNU_SOURCE
+#include <sched.h>
 #include "syncpilot.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
 #include <time.h>
+
 
 #ifdef __linux__
 #include <sched.h>  // Untuk CPU_SET, cpu_set_t, pthread_setaffinity_np
