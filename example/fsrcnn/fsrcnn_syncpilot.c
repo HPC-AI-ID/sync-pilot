@@ -533,25 +533,31 @@ void layer8(double *input, double *output, int rows, int cols, int scale) {
     const int num_ch     = 56;
     int hr_pixels        = (rows * scale) * (cols * scale);
 
-    double *accum = (double*)calloc(hr_pixels, sizeof(double));
-    if (!accum) return;
+    // 1. MEMORY ISOLATION: Buat 56 "kanvas" terpisah di Heap Memory
+    double *all_tmp = (double *)malloc(num_ch * hr_pixels * sizeof(double));
+    if (!all_tmp) return;
 
+    // 2. FASE DECONV PARALEL (TIDAK ADA TABRAKAN)
+    #pragma omp parallel for
     for (int j = 0; j < num_ch; j++) {
-        double *img_fltr_8_tmp = (double*)malloc(hr_pixels * sizeof(double));
-        if (!img_fltr_8_tmp) { free(accum); return; }
-        deconv(input + j * rows * cols, img_fltr_8_tmp,
+        // Setiap channel j menulis HANYA ke blok memorinya sendiri
+        deconv(input + j * rows * cols, all_tmp + (j * hr_pixels),
                weights_layer8 + j * filtersize, cols, rows, scale);
-        imadd(accum, img_fltr_8_tmp, cols * scale, rows * scale);
-        free(img_fltr_8_tmp);
     }
 
-    for (int i = 0; i < rows * scale; i++)
-    for (int j = 0; j < cols * scale; j++) {
-        int cnt = i * cols * scale + j;
-        output[cnt] = accum[cnt] + biases_layer8;
+    // 3. FASE PENJUMLAHAN PARALEL (SPATIAL REDUCTION)
+    #pragma omp parallel for
+    for (int p = 0; p < hr_pixels; p++) {
+        double sum = 0;
+        // Jumlahkan nilai dari ke-56 kanvas untuk piksel 'p' ini
+        for (int j = 0; j < num_ch; j++) {
+            sum += all_tmp[j * hr_pixels + p];
+        }
+        // Tambahkan bias dan masukkan ke output akhir
+        output[p] = sum + biases_layer8;
     }
 
-    free(accum);
+    free(all_tmp);
 }
 
 
