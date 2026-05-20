@@ -426,7 +426,7 @@ echo "                  MENULIS DATA & MEMBUAT GRAFIK (GNUPLOT)"
 echo "============================================================================="
 echo ""
 DAT_FILE="${SCRIPT_DIR}/benchmark_data.dat"
-echo "# Skenario Time_ms Throughput_fps" > "$DAT_FILE"
+echo "# Skenario Time_ms Throughput_fps Energy_J" > "$DAT_FILE"
 
 for i in "${!SCENARIOS[@]}"; do
     scen="${SCENARIOS[$i]}"
@@ -434,6 +434,10 @@ for i in "${!SCENARIOS[@]}"; do
     is_static="${SCENARIO_STATIC[$i]}"
     avg=${TIMES_AVG[$i]}
     throughput=$(awk "BEGIN {printf \"%.2f\", ($TOTAL_FRAMES * 1000) / $avg}")
+    energy="${ENERGIES[$i]}"
+    if [ "$energy" = "N/A" ]; then
+        energy="?"
+    fi
 
     if [ "$is_static" -eq 1 ]; then
         short_label="${scen} (Static, ${workers}t)"
@@ -441,7 +445,7 @@ for i in "${!SCENARIOS[@]}"; do
         short_label="${scen} (SyncPilot, ${workers}w)"
     fi
 
-    echo "\"$short_label\" $avg $throughput" >> "$DAT_FILE"
+    echo "\"$short_label\" $avg $throughput $energy" >> "$DAT_FILE"
 done
 echo "  [✓] File data gnuplot berhasil diperbarui di: $DAT_FILE"
 
@@ -449,7 +453,7 @@ if command -v gnuplot &> /dev/null; then
     # Masuk ke folder script agar gambar output tersimpan di sana
     cd "$SCRIPT_DIR"
     gnuplot plot_results.gp
-    echo "  [✓] Grafik throughput (fsrcnn_throughput.png) dan waktu (fsrcnn_time.png) berhasil digenerate!"
+    echo "  [✓] Grafik throughput (fsrcnn_throughput.png), waktu (fsrcnn_time.png), dan energi (fsrcnn_energy.png) berhasil digenerate!"
 else
     echo "  [!] WARNING: gnuplot tidak ditemukan di sistem Anda."
     echo "      Silakan install gnuplot atau jalankan secara manual menggunakan file plot_results.gp"
