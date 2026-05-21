@@ -38,6 +38,11 @@ static PipelineTask* sq_pop(StageQueue *sq) {
     return task;
 }
 
+static PipelineTask* sq_peek(StageQueue *sq) {
+    if (sq->count == 0) return NULL;
+    return sq->items[sq->head];
+}
+
 // Reorder Buffer Internal
 typedef struct {
     PipelineTask **slots;
@@ -77,6 +82,48 @@ typedef struct {
     PipelineEngine *engine;
     int worker_id;
 } WorkerContext;
+
+static int select_dynamic_stage_locked(PipelineEngine *engine) {
+    int num_stages = engine->config.num_stages;
+
+    if (engine->config.enable_calibration && !engine->calibration_done) {
+        for (int stage_id = num_stages - 1; stage_id >= 0; stage_id--) {
+            PipelineTask *candidate = sq_peek(&engine->stage_qs[stage_id]);
+            if (candidate && candidate->task_id == 0) {
+                return stage_id;
+            }
+        }
+        return -1;
+    }
+
+    int best_stage = -1;
+    double best_score = -1.0;
+
+    for (int stage_id = num_stages - 1; stage_id >= 0; stage_id--) {
+        StageQueue *sq = &engine->stage_qs[stage_id];
+        if (sq->count == 0) continue;
+
+        double estimated_cost = engine->stage_cost_estimates[stage_id];
+        if (estimated_cost <= 0.0) {
+            estimated_cost = 1.0;
+        }
+
+        /*
+         * IC-RCE priority: heavy stages with backlog get served first.
+         * A tiny downstream bias keeps completed-near tasks flowing out.
+         */
+        double backlog_factor = 1.0 + ((double)sq->count / (double)sq->cap);
+        double downstream_bias = (double)stage_id / (double)(num_stages * 1000);
+        double score = estimated_cost * backlog_factor + downstream_bias;
+
+        if (score > best_score) {
+            best_score = score;
+            best_stage = stage_id;
+        }
+    }
+
+    return best_stage;
+}
 
 
 // ==========================================
@@ -142,13 +189,9 @@ static void* system_worker_thread(void *arg) {
                     }
                 }
             } else {
-                // Prioritas antrean dr Stage Terakhir s.d Stage Awal (Mencegah Deadlock Bottleneck)
-                for (int stage_id = num_stages - 1; stage_id >= 0; stage_id--) {
-                    my_task = sq_pop(&engine->stage_qs[stage_id]);
-                    if (my_task) {
-                        current_idx = stage_id;
-                        break;
-                    }
+                current_idx = select_dynamic_stage_locked(engine);
+                if (current_idx >= 0) {
+                    my_task = sq_pop(&engine->stage_qs[current_idx]);
                 }
             }
 
@@ -210,6 +253,9 @@ static void* system_worker_thread(void *arg) {
             if (engine->stages_calibrated >= engine->config.num_stages) {
                 engine->calibration_done = 1;
                 pthread_cond_broadcast(&engine->calib_cond);
+                pthread_mutex_lock(&engine->lock);
+                pthread_cond_broadcast(&engine->cond_work);
+                pthread_mutex_unlock(&engine->lock);
             }
             pthread_mutex_unlock(&engine->calib_lock);
 
