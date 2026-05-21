@@ -24,7 +24,7 @@ OUT_WIDTH=$((WIDTH * 2))
 OUT_HEIGHT=$((HEIGHT * 2))
 
 # Jumlah iterasi untuk rata-rata waktu
-NUM_RUNS=8
+NUM_RUNS=3
 
 # Total frames
 TOTAL_FRAMES=150

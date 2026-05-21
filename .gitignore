@@ -1,0 +1,11 @@
+example/encoder/encoder_test
+example/fsrcnn/fsrcnn_baseline
+example/fsrcnn/fsrcnn_syncpilot
+example/fsrcnn/logs/fsrcnn_syncpilot.txt
+example/fsrcnn/output_baseline_ground_truth.yuv
+example/fsrcnn/output_fsrcnn_baseline.yuv
+example/fsrcnn/output_fsrcnn_syncpilot.yuv
+example/fsrcnn/output_scenario_A.yuv
+example/fsrcnn/output_scenario_B.yuv
+example/fsrcnn/output_scenario_C.yuv
+example/fsrcnn/output_scenario_D.yuv
