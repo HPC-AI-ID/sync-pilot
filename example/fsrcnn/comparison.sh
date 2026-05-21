@@ -35,7 +35,6 @@ SCENARIOS=(
     "A"
     "B"
     "C"
-    "D"
 )
 
 LABELS=(
@@ -43,15 +42,14 @@ LABELS=(
     "A (Static Pipeline, 8 thr)"
     "B (SyncPilot, 4 workers)"
     "C (SyncPilot, 8 workers)"
-    "D (SyncPilot, 12 workers)"
 )
 
 # Executable yang digunakan tiap skenario: baseline atau syncpilot
-SCENARIO_RUNNERS=(baseline syncpilot syncpilot syncpilot syncpilot)
+SCENARIO_RUNNERS=(baseline syncpilot syncpilot syncpilot)
 
 # Konfigurasi argumen untuk fsrcnn_syncpilot: <num_workers> <enable_static_pipeline>
-SCENARIO_WORKERS=(8 8 4 8 12)
-SCENARIO_STATIC=(0 1 0 0 0)
+SCENARIO_WORKERS=(8 8 4 8)
+SCENARIO_STATIC=(0 1 0 0)
 
 # ===================== KOMPILASI =====================
 echo "============================================================================="
