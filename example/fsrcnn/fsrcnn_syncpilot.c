@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
-#include <omp.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -546,16 +545,14 @@ void layer8(double *input, double *output, int rows, int cols, int scale) {
     double *all_tmp = (double *)malloc(num_ch * hr_pixels * sizeof(double));
     if (!all_tmp) return;
 
-    // 2. FASE DECONV PARALEL (TIDAK ADA TABRAKAN)
-    #pragma omp parallel for
+    // 2. FASE DECONV
     for (int j = 0; j < num_ch; j++) {
         // Setiap channel j menulis HANYA ke blok memorinya sendiri
         deconv(input + j * rows * cols, all_tmp + (j * hr_pixels),
                weights_layer8 + j * filtersize, cols, rows, scale);
     }
 
-    // 3. FASE PENJUMLAHAN PARALEL (SPATIAL REDUCTION)
-    #pragma omp parallel for
+    // 3. FASE PENJUMLAHAN (SPATIAL REDUCTION)
     for (int p = 0; p < hr_pixels; p++) {
         double sum = 0;
         // Jumlahkan nilai dari ke-56 kanvas untuk piksel 'p' ini
