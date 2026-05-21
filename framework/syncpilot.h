@@ -77,9 +77,6 @@ typedef struct {
     // === Initial Calibration Runtime Cost Estimation (IC-RCE) ===
     int enable_calibration;           // 1 = ukur biaya stage di task pertama, 0 = skip
 
-    // === Static Pipeline (Scenario A Baseline) ===
-    int enable_static_pipeline;       // 1 = static pipeline (1 thread per layer), 0 = dynamic workers
-
 } PipelineConfig;
 
 /**

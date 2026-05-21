@@ -80,7 +80,6 @@ struct PipelineEngine {
 
 typedef struct {
     PipelineEngine *engine;
-    int worker_id;
 } WorkerContext;
 
 static int select_dynamic_stage_locked(PipelineEngine *engine) {
@@ -177,22 +176,11 @@ static void* system_worker_thread(void *arg) {
         PipelineTask *my_task = NULL;
         int current_idx       = -1;
 
-        // Loop Prioritas: Cari stage tertinggi dlu
+        // Scheduler dinamis: pilih stage berdasarkan estimasi biaya dan backlog.
         while (!engine->shutdown) {
-            if (engine->config.enable_static_pipeline) {
-                // Static Pipeline: Worker only pops from its dedicated stage
-                int stage_id = ctx->worker_id;
-                if (stage_id < num_stages) {
-                    my_task = sq_pop(&engine->stage_qs[stage_id]);
-                    if (my_task) {
-                        current_idx = stage_id;
-                    }
-                }
-            } else {
-                current_idx = select_dynamic_stage_locked(engine);
-                if (current_idx >= 0) {
-                    my_task = sq_pop(&engine->stage_qs[current_idx]);
-                }
+            current_idx = select_dynamic_stage_locked(engine);
+            if (current_idx >= 0) {
+                my_task = sq_pop(&engine->stage_qs[current_idx]);
             }
 
             if (my_task) break; // Dapat pekerjaan! Hajar!
@@ -364,7 +352,6 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
     for(int i=0; i < c->num_workers; i++) {
         WorkerContext *wctx = (WorkerContext*)malloc(sizeof(WorkerContext));
         wctx->engine = eng;
-        wctx->worker_id = i;
         pthread_create(&eng->workers[i], NULL, system_worker_thread, wctx);
     }
 

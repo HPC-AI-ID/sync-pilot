@@ -206,8 +206,8 @@ void fsrcnn_consumer_writer(PipelineTask *task) {
 
 // ==================== MAIN ====================
 int main(int argc, char *argv[]) {
-    if (argc < 3 || argc > 5) {
-        fprintf(stderr, "Usage: %s input.yuv output.yuv [num_workers] [enable_static_pipeline]\n", argv[0]);
+    if (argc < 3 || argc > 4) {
+        fprintf(stderr, "Usage: %s input.yuv output.yuv [num_workers]\n", argv[0]);
         return 1;
     }
     
@@ -216,10 +216,6 @@ int main(int argc, char *argv[]) {
     int num_workers = 8;
     if (argc >= 4) {
         num_workers = atoi(argv[3]);
-    }
-    int enable_static_pipeline = 0;
-    if (argc >= 5) {
-        enable_static_pipeline = atoi(argv[4]);
     }
 
     mkdir("logs", 0777);
@@ -300,7 +296,6 @@ int main(int argc, char *argv[]) {
     cfg.num_stages               = 8;   // 8 layer FSRCNN
     cfg.total_tasks              = numFrames;
     cfg.queue_capacity_per_stage = 16;  // Sama seperti LAYER_Q_CAP = 16
-    cfg.enable_static_pipeline   = enable_static_pipeline;
 
     cfg.stages[0] = cb_layer1;
     cfg.stages[1] = cb_layer2;
