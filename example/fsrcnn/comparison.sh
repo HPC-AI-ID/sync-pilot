@@ -31,6 +31,7 @@ TOTAL_FRAMES=150
 
 # Skenario Percobaan
 SCENARIOS=(
+    "BASE"
     "A"
     "B"
     "C"
@@ -38,15 +39,19 @@ SCENARIOS=(
 )
 
 LABELS=(
+    "Baseline (fsrcnn_baseline, parallel)"
     "A (Static Pipeline, 8 thr)"
     "B (SyncPilot, 4 workers)"
     "C (SyncPilot, 8 workers)"
     "D (SyncPilot, 12 workers)"
 )
 
+# Executable yang digunakan tiap skenario: baseline atau syncpilot
+SCENARIO_RUNNERS=(baseline syncpilot syncpilot syncpilot syncpilot)
+
 # Konfigurasi argumen untuk fsrcnn_syncpilot: <num_workers> <enable_static_pipeline>
-SCENARIO_WORKERS=(8 4 8 12)
-SCENARIO_STATIC=(1 0 0 0)
+SCENARIO_WORKERS=(8 8 4 8 12)
+SCENARIO_STATIC=(0 1 0 0 0)
 
 # ===================== KOMPILASI =====================
 echo "============================================================================="
@@ -164,6 +169,19 @@ get_time_ms() {
     fi
 }
 
+run_scenario() {
+    local runner="$1"
+    local output_file="$2"
+    local workers="$3"
+    local is_static="$4"
+
+    if [ "$runner" = "baseline" ]; then
+        OMP_NUM_THREADS="$workers" "${SCRIPT_DIR}/fsrcnn_baseline" "$INPUT_PATH" "$output_file" > /dev/null 2>&1
+    else
+        "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" "$is_static" > /dev/null 2>&1
+    fi
+}
+
 # ===================== PENGUKURAN IDLE POWER =====================
 POWER_IDLE=0
 if [ $HAS_POWER -eq 1 ]; then
@@ -198,6 +216,7 @@ declare -a ENERGIES
 for i in "${!SCENARIOS[@]}"; do
     scen="${SCENARIOS[$i]}"
     label="${LABELS[$i]}"
+    runner="${SCENARIO_RUNNERS[$i]}"
     workers="${SCENARIO_WORKERS[$i]}"
     is_static="${SCENARIO_STATIC[$i]}"
     
@@ -206,73 +225,59 @@ for i in "${!SCENARIOS[@]}"; do
     
     echo "---------------------------------------------------------------------"
     echo "Skenario ${label}"
-    echo "     Config: workers=${workers}, static_mode=${is_static}"
+    if [ "$runner" = "baseline" ]; then
+        echo "     Config: executable=fsrcnn_baseline, OMP_NUM_THREADS=${workers}"
+    else
+        echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}, static_mode=${is_static}"
+    fi
     echo "---------------------------------------------------------------------"
     
     total_time=0
     min_time=999999999
     max_time=0
-    
-    # 1. Run 1 (Dry-run / time profiling & PowerTop measurement)
-    rm -f "$output_file"
-    
-    start_time=$(get_time_ms)
-    "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" "$is_static" > /dev/null 2>&1
-    end_time=$(get_time_ms)
-    
-    t1=$((end_time - start_time))
-    total_time=$((total_time + t1))
-    min_time=$t1
-    max_time=$t1
-    printf "     Run 1/3 (Profil): %d ms\n" "$t1"
-    
-    # Hitung waktu powertop yang aman berdasarkan run 1
-    t_power_sec=$((t1 / 1000 + 4))
-    if [ $t_power_sec -lt 5 ]; then
-        t_power_sec=5
-    fi
-    
-    # 2. Run 2 (PowerTop measured run)
-    rm -f "$output_file"
-    
-    if [ $HAS_POWER -eq 1 ]; then
-        printf "     Memulai PowerTop (%d detik)...\n" "$t_power_sec"
-        sudo powertop --csv="${SCRIPT_DIR}/powertop_${scen}.csv" --time="$t_power_sec" >/dev/null 2>&1 &
-        POWER_PID=$!
-        sleep 1
-    fi
-    
-    start_time=$(get_time_ms)
-    "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" "$is_static" > /dev/null 2>&1
-    end_time=$(get_time_ms)
-    
-    t2=$((end_time - start_time))
-    total_time=$((total_time + t2))
-    [ $t2 -lt $min_time ] && min_time=$t2
-    [ $t2 -gt $max_time ] && max_time=$t2
-    printf "     Run 2/3 (Power) : %d ms\n" "$t2"
-    
-    if [ $HAS_POWER -eq 1 ]; then
-        wait $POWER_PID || true
-        # Ekstrak daya rata-rata
-        p_avg=$(extract_power "${SCRIPT_DIR}/powertop_${scen}.csv")
-        POWERS[$i]=$p_avg
-    else
-        POWERS[$i]=0
-    fi
-    
-    # 3. Run 3 (Normal run)
-    rm -f "$output_file"
-    
-    start_time=$(get_time_ms)
-    "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" "$is_static" > /dev/null 2>&1
-    end_time=$(get_time_ms)
-    
-    t3=$((end_time - start_time))
-    total_time=$((total_time + t3))
-    [ $t3 -lt $min_time ] && min_time=$t3
-    [ $t3 -gt $max_time ] && max_time=$t3
-    printf "     Run 3/3 (Normal): %d ms\n" "$t3"
+    t_power_sec=5
+    POWERS[$i]=0
+
+    for ((run=1; run<=NUM_RUNS; run++)); do
+        rm -f "$output_file"
+
+        if [ "$run" -eq 2 ] && [ $HAS_POWER -eq 1 ]; then
+            printf "     Memulai PowerTop (%d detik)...\n" "$t_power_sec"
+            sudo powertop --csv="${SCRIPT_DIR}/powertop_${scen}.csv" --time="$t_power_sec" >/dev/null 2>&1 &
+            POWER_PID=$!
+            sleep 1
+        fi
+
+        start_time=$(get_time_ms)
+        run_scenario "$runner" "$output_file" "$workers" "$is_static"
+        end_time=$(get_time_ms)
+
+        elapsed=$((end_time - start_time))
+        total_time=$((total_time + elapsed))
+        [ $elapsed -lt $min_time ] && min_time=$elapsed
+        [ $elapsed -gt $max_time ] && max_time=$elapsed
+
+        if [ "$run" -eq 1 ]; then
+            printf "     Run %d/%d (Profil): %d ms\n" "$run" "$NUM_RUNS" "$elapsed"
+
+            # Hitung waktu powertop yang aman berdasarkan run 1.
+            t_power_sec=$((elapsed / 1000 + 4))
+            if [ $t_power_sec -lt 5 ]; then
+                t_power_sec=5
+            fi
+        elif [ "$run" -eq 2 ]; then
+            printf "     Run %d/%d (Power) : %d ms\n" "$run" "$NUM_RUNS" "$elapsed"
+        else
+            printf "     Run %d/%d (Normal): %d ms\n" "$run" "$NUM_RUNS" "$elapsed"
+        fi
+
+        if [ "$run" -eq 2 ] && [ $HAS_POWER -eq 1 ]; then
+            wait $POWER_PID || true
+            # Ekstrak daya rata-rata.
+            p_avg=$(extract_power "${SCRIPT_DIR}/powertop_${scen}.csv")
+            POWERS[$i]=$p_avg
+        fi
+    done
     
     # Hitung rata-rata
     avg_time=$((total_time / NUM_RUNS))
@@ -373,7 +378,7 @@ echo "==========================================================================
 echo ""
 
 baseline_time=${TIMES_AVG[0]}
-printf "Baseline (Skenario A): %s (%d ms)\n\n" "${LABELS[0]}" "$baseline_time"
+printf "Baseline: %s (%d ms)\n\n" "${LABELS[0]}" "$baseline_time"
 printf "%-30s | %12s | %s\n" "Skenario" "Speedup" "Keterangan"
 printf "%-30s-+-%12s-+-%s\n" "------------------------------" "------------" "--------------------"
 
@@ -430,6 +435,7 @@ echo "# Skenario Time_ms Throughput_fps Energy_J" > "$DAT_FILE"
 
 for i in "${!SCENARIOS[@]}"; do
     scen="${SCENARIOS[$i]}"
+    runner="${SCENARIO_RUNNERS[$i]}"
     workers="${SCENARIO_WORKERS[$i]}"
     is_static="${SCENARIO_STATIC[$i]}"
     avg=${TIMES_AVG[$i]}
@@ -439,7 +445,9 @@ for i in "${!SCENARIOS[@]}"; do
         energy="?"
     fi
 
-    if [ "$is_static" -eq 1 ]; then
+    if [ "$runner" = "baseline" ]; then
+        short_label="${scen} (Baseline, ${workers}t)"
+    elif [ "$is_static" -eq 1 ]; then
         short_label="${scen} (Static, ${workers}t)"
     else
         short_label="${scen} (SyncPilot, ${workers}w)"
