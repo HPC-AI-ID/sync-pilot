@@ -36,6 +36,9 @@ NUM_RUNS=3
 # Total frames
 TOTAL_FRAMES=150
 
+# Ukuran output YUV420p yang diharapkan untuk validasi cache ground truth
+EXPECTED_OUTPUT_SIZE=$((OUT_WIDTH * OUT_HEIGHT * 3 / 2 * TOTAL_FRAMES))
+
 # Skenario Percobaan
 SCENARIOS=(
     "BASE"
@@ -174,6 +177,11 @@ get_time_ms() {
     fi
 }
 
+get_file_size() {
+    local file="$1"
+    stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo "0"
+}
+
 run_scenario() {
     local runner="$1"
     local output_file="$2"
@@ -188,10 +196,26 @@ run_scenario() {
 
 # ===================== GROUND TRUTH GENERATION =====================
 GROUND_TRUTH="${SCRIPT_DIR}/output_baseline_ground_truth.yuv"
-echo ">> Membuat ground truth dari Baseline (fsrcnn_baseline)..."
 print_no_photo_phase "pembuatan ground truth pembanding"
-"${SCRIPT_DIR}/fsrcnn_baseline" "$INPUT_PATH" "$GROUND_TRUTH" > /dev/null 2>&1
-echo "   Ground truth selesai: $(du -h "$GROUND_TRUTH" | awk '{print $1}')"
+
+if [ -f "$GROUND_TRUTH" ]; then
+    ground_truth_size=$(get_file_size "$GROUND_TRUTH")
+else
+    ground_truth_size=0
+fi
+
+if [ "$ground_truth_size" -eq "$EXPECTED_OUTPUT_SIZE" ]; then
+    echo ">> Ground truth sudah ada, pakai cache: ${GROUND_TRUTH}"
+    echo "   Ukuran: $(du -h "$GROUND_TRUTH" | awk '{print $1}')"
+else
+    if [ "$ground_truth_size" -gt 0 ]; then
+        echo ">> Ground truth cache tidak valid (${ground_truth_size} bytes, expected ${EXPECTED_OUTPUT_SIZE}), membuat ulang..."
+    else
+        echo ">> Membuat ground truth dari Baseline (fsrcnn_baseline)..."
+    fi
+    "${SCRIPT_DIR}/fsrcnn_baseline" "$INPUT_PATH" "$GROUND_TRUTH" > /dev/null 2>&1
+    echo "   Ground truth selesai: $(du -h "$GROUND_TRUTH" | awk '{print $1}')"
+fi
 echo ""
 
 # ===================== EKSEKUSI SKENARIO =====================
@@ -257,7 +281,7 @@ for i in "${!SCENARIOS[@]}"; do
     
     # Ukuran output
     if [ -f "$output_file" ]; then
-        OUTPUT_SIZES[$i]=$(stat -f%z "$output_file" 2>/dev/null || stat -c%s "$output_file" 2>/dev/null || echo "0")
+        OUTPUT_SIZES[$i]=$(get_file_size "$output_file")
     else
         OUTPUT_SIZES[$i]=0
     fi
