@@ -100,12 +100,12 @@ static double average_stage_cost_locked(PipelineEngine *engine) {
     return counted > 0 ? total / counted : 0.0;
 }
 
-static int select_dynamic_stage_locked(PipelineEngine *engine, int core_class, int strict_class) {
+static int select_dynamic_stage_locked(PipelineEngine *engine, int core_class, int steal_mode) {
     int num_stages = engine->config.num_stages;
-    double avg_cost = 0.0;
+    double heavy_threshold = 0.0;
 
-    if (engine->calibration_done && core_class >= 0 && strict_class) {
-        avg_cost = average_stage_cost_locked(engine);
+    if (engine->calibration_done && core_class >= 0) {
+        heavy_threshold = average_stage_cost_locked(engine) * 0.75;
     }
 
     int best_stage = -1;
@@ -126,9 +126,16 @@ static int select_dynamic_stage_locked(PipelineEngine *engine, int core_class, i
             estimated_cost = 1.0;
         }
 
-        if (avg_cost > 0.0) {
-            if (core_class == 1 && estimated_cost < avg_cost) continue;
-            if (core_class == 0 && estimated_cost >= avg_cost) continue;
+        if (heavy_threshold > 0.0) {
+            int is_heavy = estimated_cost >= heavy_threshold;
+            int urgent_backlog = sq->count > (sq->cap / 2);
+
+            if (steal_mode == 0) {
+                if (core_class == 1 && !is_heavy) continue;
+                if (core_class == 0 && is_heavy) continue;
+            } else if (steal_mode == 1) {
+                if (core_class == 0 && is_heavy && !urgent_backlog) continue;
+            }
         }
 
         /*
@@ -204,9 +211,9 @@ static void* system_worker_thread(void *arg) {
 
         // Scheduler dinamis: pilih stage berdasarkan estimasi biaya dan backlog.
         while (!engine->shutdown) {
-            current_idx = select_dynamic_stage_locked(engine, core_class, 1);
+            current_idx = select_dynamic_stage_locked(engine, core_class, 0);
             if (current_idx < 0) {
-                current_idx = select_dynamic_stage_locked(engine, core_class, 0);
+                current_idx = select_dynamic_stage_locked(engine, core_class, 1);
             }
             if (current_idx >= 0) {
                 my_task = sq_pop(&engine->stage_qs[current_idx]);
