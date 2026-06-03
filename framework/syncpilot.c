@@ -63,6 +63,7 @@ struct PipelineEngine {
     int input_done;
     int shutdown;
     int tasks_in_flight;
+    int reserved_slots[MAX_STAGES];
 
     FinalReorderBuffer *reorder;
     pthread_t *workers;
@@ -92,6 +93,12 @@ static int select_dynamic_stage_locked(PipelineEngine *engine) {
     for (int stage_id = num_stages - 1; stage_id >= 0; stage_id--) {
         StageQueue *sq = &engine->stage_qs[stage_id];
         if (sq->count == 0) continue;
+        if (stage_id + 1 < num_stages) {
+            StageQueue *next_sq = &engine->stage_qs[stage_id + 1];
+            if (next_sq->count + engine->reserved_slots[stage_id + 1] >= next_sq->cap) {
+                continue;
+            }
+        }
 
         double estimated_cost = engine->stage_cost_estimates[stage_id];
         if (estimated_cost <= 0.0) {
@@ -166,12 +173,17 @@ static void* system_worker_thread(void *arg) {
 
         PipelineTask *my_task = NULL;
         int current_idx       = -1;
+        int reserved_next_idx = -1;
 
         // Scheduler dinamis: pilih stage berdasarkan estimasi biaya dan backlog.
         while (!engine->shutdown) {
             current_idx = select_dynamic_stage_locked(engine);
             if (current_idx >= 0) {
                 my_task = sq_pop(&engine->stage_qs[current_idx]);
+                if (my_task && current_idx + 1 < num_stages) {
+                    reserved_next_idx = current_idx + 1;
+                    engine->reserved_slots[reserved_next_idx]++;
+                }
             }
 
             if (my_task) break; // Dapat pekerjaan! Hajar!
@@ -284,14 +296,12 @@ static void* system_worker_thread(void *arg) {
             // Belum selesai (Lanjut ke tahapan antrean berikutnya)
             int next_stage = current_idx + 1;
             pthread_mutex_lock(&engine->lock);
-            while (!sq_push(&engine->stage_qs[next_stage], my_task)) {
-                // Klo antrean berikutnya full (backpressure internal antar stage)
-                pthread_cond_broadcast(&engine->cond_work); // Bangunin thread lain utk nguras
-                pthread_mutex_unlock(&engine->lock);
-                // usleep(1M) -> Hindari busy wait parah tanpa konteks block OS
-                // Kita switch aja yield cpu agar thread penguras layer lambat kerjain tugssnya dl
-                struct timespec ts; ts.tv_sec = 0; ts.tv_nsec = 50000; nanosleep(&ts, NULL);
-                pthread_mutex_lock(&engine->lock);
+            if (!sq_push(&engine->stage_qs[next_stage], my_task)) {
+                fprintf(stderr, "SyncPilot internal error: reserved stage queue penuh\n");
+                abort();
+            }
+            if (reserved_next_idx == next_stage && engine->reserved_slots[next_stage] > 0) {
+                engine->reserved_slots[next_stage]--;
             }
             engine->tasks_in_flight--; // Krn sudah aman parkir di Q stage slnjutnya
             pthread_cond_broadcast(&engine->cond_work);
