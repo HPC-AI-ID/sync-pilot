@@ -72,6 +72,7 @@ struct PipelineEngine {
 
     // === IC-RCE: Initial Calibration Runtime Cost Estimation ===
     double stage_cost_estimates[MAX_STAGES]; // Waktu eksekusi per stage (detik)
+    int    stage_calibrated[MAX_STAGES];     // Flag per-stage agar tiap layer diukur sekali
     int    calibration_done;                 // Flag: kalibrasi sudah selesai
     int    stages_calibrated;                // Counter: berapa stage sudah diukur
     pthread_mutex_t calib_lock;              // Lock khusus kalibrasi
@@ -84,16 +85,6 @@ typedef struct {
 
 static int select_dynamic_stage_locked(PipelineEngine *engine) {
     int num_stages = engine->config.num_stages;
-
-    if (engine->config.enable_calibration && !engine->calibration_done) {
-        for (int stage_id = num_stages - 1; stage_id >= 0; stage_id--) {
-            PipelineTask *candidate = sq_peek(&engine->stage_qs[stage_id]);
-            if (candidate && candidate->task_id == 0) {
-                return stage_id;
-            }
-        }
-        return -1;
-    }
 
     int best_stage = -1;
     double best_score = -1.0;
@@ -217,9 +208,14 @@ static void* system_worker_thread(void *arg) {
         // ====== 1. Pengerjaan Fase (Luar Lock) ======
         StageProcessorFn process_step = engine->config.stages[current_idx];
 
-        if (engine->config.enable_calibration &&
-            my_task->task_id == 0 &&
-            !engine->calibration_done) {
+        int should_calibrate = 0;
+        if (engine->config.enable_calibration && my_task->task_id == 0) {
+            pthread_mutex_lock(&engine->calib_lock);
+            should_calibrate = !engine->stage_calibrated[current_idx];
+            pthread_mutex_unlock(&engine->calib_lock);
+        }
+
+        if (should_calibrate) {
 
             // === CALIBRATION PHASE: Ukur waktu eksekusi stage ini ===
             struct timespec cal_start, cal_end;
@@ -235,8 +231,11 @@ static void* system_worker_thread(void *arg) {
 
             // Simpan estimasi biaya stage ini (thread-safe)
             pthread_mutex_lock(&engine->calib_lock);
-            engine->stage_cost_estimates[current_idx] = duration;
-            engine->stages_calibrated++;
+            if (!engine->stage_calibrated[current_idx]) {
+                engine->stage_calibrated[current_idx] = 1;
+                engine->stage_cost_estimates[current_idx] = duration;
+                engine->stages_calibrated++;
+            }
 
             if (engine->stages_calibrated >= engine->config.num_stages) {
                 engine->calibration_done = 1;
@@ -322,6 +321,7 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
 
     // Inisialisasi IC-RCE (Initial Calibration)
     memset(eng->stage_cost_estimates, 0, sizeof(eng->stage_cost_estimates));
+    memset(eng->stage_calibrated, 0, sizeof(eng->stage_calibrated));
     eng->calibration_done  = 0;
     eng->stages_calibrated = 0;
     pthread_mutex_init(&eng->calib_lock, NULL);
