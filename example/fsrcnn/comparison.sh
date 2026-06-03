@@ -45,6 +45,7 @@ SCENARIOS=(
     "A"
     "B"
     "C"
+    "D"
 )
 
 LABELS=(
@@ -52,16 +53,17 @@ LABELS=(
     "A (SyncPilot, 4 workers)"
     "B (SyncPilot, 8 workers)"
     "C (SyncPilot Hybrid, 4w+2i)"
+    "D (SyncPilot Hybrid, 8w+2i)"
 )
 
 # Executable yang digunakan tiap skenario: baseline atau syncpilot
-SCENARIO_RUNNERS=(baseline syncpilot syncpilot hybrid)
+SCENARIO_RUNNERS=(baseline syncpilot syncpilot hybrid hybrid)
 
 # Konfigurasi argumen untuk fsrcnn_syncpilot: <num_workers>
-SCENARIO_WORKERS=(8 4 8 4)
+SCENARIO_WORKERS=(8 4 8 4 8)
 
 # Konfigurasi argumen khusus hybrid: <inner_threads>
-SCENARIO_INNER_THREADS=(1 1 1 2)
+SCENARIO_INNER_THREADS=(1 1 1 2 2)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
