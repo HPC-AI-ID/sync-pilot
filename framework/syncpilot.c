@@ -82,10 +82,31 @@ struct PipelineEngine {
 
 typedef struct {
     PipelineEngine *engine;
+    int core_class; // 1 = big core worker, 0 = little core worker, -1 = unknown/homogeneous
 } WorkerContext;
 
-static int select_dynamic_stage_locked(PipelineEngine *engine) {
+static double average_stage_cost_locked(PipelineEngine *engine) {
     int num_stages = engine->config.num_stages;
+    double total = 0.0;
+    int counted = 0;
+
+    for (int i = 0; i < num_stages; i++) {
+        if (engine->stage_cost_estimates[i] > 0.0) {
+            total += engine->stage_cost_estimates[i];
+            counted++;
+        }
+    }
+
+    return counted > 0 ? total / counted : 0.0;
+}
+
+static int select_dynamic_stage_locked(PipelineEngine *engine, int core_class, int strict_class) {
+    int num_stages = engine->config.num_stages;
+    double avg_cost = 0.0;
+
+    if (engine->calibration_done && core_class >= 0 && strict_class) {
+        avg_cost = average_stage_cost_locked(engine);
+    }
 
     int best_stage = -1;
     double best_score = -1.0;
@@ -103,6 +124,11 @@ static int select_dynamic_stage_locked(PipelineEngine *engine) {
         double estimated_cost = engine->stage_cost_estimates[stage_id];
         if (estimated_cost <= 0.0) {
             estimated_cost = 1.0;
+        }
+
+        if (avg_cost > 0.0) {
+            if (core_class == 1 && estimated_cost < avg_cost) continue;
+            if (core_class == 0 && estimated_cost >= avg_cost) continue;
         }
 
         /*
@@ -167,6 +193,7 @@ static void* system_worker_thread(void *arg) {
     WorkerContext  *ctx    = (WorkerContext*)arg;
     PipelineEngine *engine = ctx->engine;
     int num_stages         = engine->config.num_stages;
+    int core_class         = ctx->core_class;
 
     while (1) {
         pthread_mutex_lock(&engine->lock);
@@ -177,7 +204,10 @@ static void* system_worker_thread(void *arg) {
 
         // Scheduler dinamis: pilih stage berdasarkan estimasi biaya dan backlog.
         while (!engine->shutdown) {
-            current_idx = select_dynamic_stage_locked(engine);
+            current_idx = select_dynamic_stage_locked(engine, core_class, 1);
+            if (current_idx < 0) {
+                current_idx = select_dynamic_stage_locked(engine, core_class, 0);
+            }
             if (current_idx >= 0) {
                 my_task = sq_pop(&engine->stage_qs[current_idx]);
                 if (my_task && current_idx + 1 < num_stages) {
@@ -354,26 +384,16 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
     pthread_mutex_init(&eng->reorder->lock, NULL);
     pthread_cond_init(&eng->reorder->cond, NULL);
 
-    // Kembang-biakan Consumer pembaca Buffer
-    pthread_create(&eng->t_consumer, NULL, system_consumer_thread, eng);
+    int worker_core_classes[MAX_CORES];
+    for (int i = 0; i < MAX_CORES; i++) worker_core_classes[i] = -1;
 
-    // Kembang-biakan Tentaranya (Worker Pool Priority)
-    eng->workers = (pthread_t*)malloc(c->num_workers * sizeof(pthread_t));
-    for(int i=0; i < c->num_workers; i++) {
-        WorkerContext *wctx = (WorkerContext*)malloc(sizeof(WorkerContext));
-        wctx->engine = eng;
-        pthread_create(&eng->workers[i], NULL, system_worker_thread, wctx);
-    }
-
-    // === Asymmetric Core Affinity Mapping (khusus Linux) ===
 #ifdef __linux__
-    if (c->enable_affinity) {
-        int auto_big_cores[MAX_CORES];
-        int auto_little_cores[MAX_CORES];
-        int num_big = c->num_big_cores;
-        int num_little = c->num_little_cores;
+    int auto_big_cores[MAX_CORES];
+    int auto_little_cores[MAX_CORES];
+    int num_big = c->num_big_cores;
+    int num_little = c->num_little_cores;
 
-        // Salin konfigurasi manual jika disediakan oleh pengguna
+    if (c->enable_affinity) {
         if (num_big > 0 || num_little > 0) {
             memcpy(auto_big_cores, c->big_core_ids, num_big * sizeof(int));
             memcpy(auto_little_cores, c->little_core_ids, num_little * sizeof(int));
@@ -411,8 +431,6 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
             num_little = 0;
 
             if (has_freq && highest_freq > lowest_freq) {
-                // Arsitektur Asimetris Terdeteksi! (big.LITTLE)
-                // Core dengan frekuensi tertinggi = Big Cores
                 for (int i = 0; i < n_cpus; i++) {
                     if (max_freqs[i] == highest_freq) {
                         auto_big_cores[num_big++] = i;
@@ -421,17 +439,41 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
                     }
                 }
             } else {
-                // Arsitektur Homogen atau pembacaan frekuensi gagal: Split 50/50
                 for (int i = 0; i < n_cpus; i++) {
                     if (i < n_cpus / 2) {
-                        auto_big_cores[num_big++] = i;
-                    } else {
                         auto_little_cores[num_little++] = i;
+                    } else {
+                        auto_big_cores[num_big++] = i;
                     }
                 }
             }
         }
 
+        for (int i = 0; i < c->num_workers && i < MAX_CORES; i++) {
+            if (num_big > 0 && i < num_big) {
+                worker_core_classes[i] = 1;
+            } else if (num_little > 0) {
+                worker_core_classes[i] = 0;
+            }
+        }
+    }
+#endif
+
+    // Kembang-biakan Consumer pembaca Buffer
+    pthread_create(&eng->t_consumer, NULL, system_consumer_thread, eng);
+
+    // Kembang-biakan Tentaranya (Worker Pool Priority)
+    eng->workers = (pthread_t*)malloc(c->num_workers * sizeof(pthread_t));
+    for(int i=0; i < c->num_workers; i++) {
+        WorkerContext *wctx = (WorkerContext*)malloc(sizeof(WorkerContext));
+        wctx->engine = eng;
+        wctx->core_class = (i < MAX_CORES) ? worker_core_classes[i] : -1;
+        pthread_create(&eng->workers[i], NULL, system_worker_thread, wctx);
+    }
+
+    // === Asymmetric Core Affinity Mapping (khusus Linux) ===
+#ifdef __linux__
+    if (c->enable_affinity) {
         // Terapkan Affinity Pinning menggunakan hasil deteksi
         for (int i = 0; i < c->num_workers; i++) {
             cpu_set_t cpuset;
