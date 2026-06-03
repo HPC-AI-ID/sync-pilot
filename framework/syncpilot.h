@@ -112,7 +112,16 @@ void pipeline_close_input(PipelineEngine *engine);
 
 /**
  * Menunggu (*Join*) seluruh pekerjaan (Worker dan Consumer) benar-benar tamat.
- * Kemudian menghancurkan memori Engine (Cleanup).
+ */
+void pipeline_wait(PipelineEngine *engine);
+
+/**
+ * Menghancurkan memori Engine (Cleanup). Panggil setelah pipeline_wait().
+ */
+void pipeline_destroy(PipelineEngine *engine);
+
+/**
+ * Menunggu (*Join*) seluruh pekerjaan, lalu menghancurkan memori Engine.
  */
 void pipeline_wait_and_destroy(PipelineEngine *engine);
 

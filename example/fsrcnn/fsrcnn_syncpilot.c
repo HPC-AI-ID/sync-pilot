@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
     const int inRows    = 144;
     const int outCols   = inCols * scale;
     const int outRows   = inRows * scale;
-    const int numFrames = 150;
+    const int maxFrames = 150;
 
     // ========== Seting Consumer Global ==========
     g_inCols = inCols; g_inRows = inRows;
@@ -237,6 +237,25 @@ int main(int argc, char *argv[]) {
     if (!inFp) { perror("fopen input"); return 1; }
     g_outFp = fopen(outFile, "wb");
     if (!g_outFp) { perror("fopen output"); fclose(inFp); return 1; }
+
+    const long frame_size = (long)inCols * inRows + 2L * (inCols / 2) * (inRows / 2);
+    struct stat input_stat;
+    if (stat(inFile, &input_stat) != 0) {
+        perror("stat input");
+        fclose(inFp);
+        fclose(g_outFp);
+        return 1;
+    }
+
+    int numFrames = (int)(input_stat.st_size / frame_size);
+    if (numFrames > maxFrames) numFrames = maxFrames;
+    if (numFrames <= 0) {
+        fprintf(stderr, "Input tidak berisi frame YUV420 QCIF lengkap (%ld byte per frame).\n", frame_size);
+        fclose(inFp);
+        fclose(g_outFp);
+        return 1;
+    }
+    printf("Akan memproses %d frame dari input.\n", numFrames);
 
     // ========== Muat bobot & bias ==========
     FILE *fp;
@@ -271,19 +290,32 @@ int main(int argc, char *argv[]) {
     // ========== Pre-baca UV semua frame ==========
     int uv_size = (inCols / 2) * (inRows / 2);
     g_uv_size = uv_size;
+    int allocatedFrames = numFrames;
     g_uv_store = (unsigned char**)malloc(numFrames * sizeof(unsigned char*));
     for (int f = 0; f < numFrames; f++)
         g_uv_store[f] = (unsigned char*)malloc(2 * uv_size);
 
     {
         unsigned char *yBuf = (unsigned char*)malloc(inCols * inRows);
+        int frames_uv_read = 0;
         for (int f = 0; f < numFrames; f++) {
             if (fread(yBuf, 1, inCols * inRows, inFp) != (size_t)(inCols * inRows)) break;
             if (fread(g_uv_store[f], 1, 2 * uv_size, inFp) != (size_t)(2 * uv_size)) break;
+            frames_uv_read++;
         }
         free(yBuf);
+        numFrames = frames_uv_read;
     }
     rewind(inFp);
+
+    if (numFrames <= 0) {
+        fprintf(stderr, "Input gagal dibaca sebagai frame YUV420 QCIF lengkap.\n");
+        fclose(inFp);
+        fclose(g_outFp);
+        for (int f = 0; f < allocatedFrames; f++) free(g_uv_store[f]);
+        free(g_uv_store);
+        return 1;
+    }
 
 
     // ==============================================================
@@ -348,7 +380,7 @@ int main(int argc, char *argv[]) {
     pipeline_close_input(engine);
 
     // ========== Tunggu semua worker selesai ==========
-    pipeline_wait_and_destroy(engine);
+    pipeline_wait(engine);
 
     // Tampilkan hasil kalibrasi IC-RCE untuk bahan Analisis/Paper
     if (pipeline_is_calibrated(engine)) {
@@ -362,10 +394,12 @@ int main(int argc, char *argv[]) {
         printf("==================================================\n\n");
     }
 
+    pipeline_destroy(engine);
+
     printf("Pipeline SyncPilot selesai, %d frame ditulis ke disk.\n", g_frames_out);
 
     // ========== Bersihkan ==========
-    for (int f = 0; f < numFrames; f++) free(g_uv_store[f]);
+    for (int f = 0; f < allocatedFrames; f++) free(g_uv_store[f]);
     free(g_uv_store);
     fclose(inFp);
     fclose(g_outFp);

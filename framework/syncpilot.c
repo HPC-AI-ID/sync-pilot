@@ -471,14 +471,17 @@ void pipeline_close_input(PipelineEngine *engine) {
 }
 
 
-void pipeline_wait_and_destroy(PipelineEngine *engine) {
+void pipeline_wait(PipelineEngine *engine) {
     // Join siasat pasukan
     for(int i=0; i < engine->config.num_workers; i++) {
         pthread_join(engine->workers[i], NULL);
     }
     // Join siasat consumer kurir
     pthread_join(engine->t_consumer, NULL);
+}
 
+
+void pipeline_destroy(PipelineEngine *engine) {
     // Demolish Engine Mem Space
     for(int i=0; i < engine->config.num_stages; i++) {
         free(engine->stage_qs[i].items);
@@ -500,6 +503,12 @@ void pipeline_wait_and_destroy(PipelineEngine *engine) {
     pthread_cond_destroy(&engine->calib_cond);
 
     free(engine);
+}
+
+
+void pipeline_wait_and_destroy(PipelineEngine *engine) {
+    pipeline_wait(engine);
+    pipeline_destroy(engine);
 }
 
 

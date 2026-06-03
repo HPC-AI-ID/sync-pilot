@@ -149,8 +149,8 @@ int main() {
     // 4. Tutup pintu masuk (agar engine tahu kapan harus bunuh diri)
     pipeline_close_input(engine);
 
-    // 5. Tunggu semuanya selesai dan bersihkan memori
-    pipeline_wait_and_destroy(engine);
+    // 5. Tunggu semuanya selesai
+    pipeline_wait(engine);
 
     // Tampilkan hasil kalibrasi IC-RCE
     if (pipeline_is_calibrated(engine)) {
@@ -163,6 +163,8 @@ int main() {
         printf("Tahap 2 (Encode): %0.6f detik\n", costs[2]);
         printf("==================================================\n");
     }
+
+    pipeline_destroy(engine);
 
     printf("\n=== PROSES RENDER SELESAI ===\n");
     return 0;
