@@ -5,10 +5,17 @@
 # Menguji skenario FSRCNN dengan input yang sama,
 # mengukur waktu eksekusi, throughput, dan PSNR.
 #
-# Usage: bash comparison.sh
+# Usage:
+#   bash comparison.sh              # build lalu jalankan benchmark penuh
+#   bash comparison.sh --build-only # hanya build/cache executable, tanpa eksekusi
 ###############################################################################
 
 set -e
+
+BUILD_ONLY=0
+if [ "${1:-}" = "--build-only" ] || [ "${1:-}" = "build-only" ]; then
+    BUILD_ONLY=1
+fi
 
 # ===================== KONFIGURASI =====================
 INPUT_FILE="suzie_qcif.yuv"
@@ -48,10 +55,55 @@ SCENARIO_RUNNERS=(baseline syncpilot syncpilot)
 # Konfigurasi argumen untuk fsrcnn_syncpilot: <num_workers>
 SCENARIO_WORKERS=(8 4 8)
 
+# ===================== PANDUAN FOTO DAYA =====================
+print_power_photo_guide() {
+    echo "============================================================================="
+    echo "                    PANDUAN FOTO DATA DAYA / POWER METER"
+    echo "============================================================================="
+    echo "TIDAK perlu foto saat:"
+    echo "  - kompilasi/build executable"
+    echo "  - mode --build-only/cache build"
+    echo "  - pembuatan ground truth"
+    echo "  - hitung PSNR, cek konsistensi, dan generate grafik"
+    echo ""
+    echo "PERLU foto hanya saat terminal menampilkan:"
+    echo "  [FOTO DAYA MULAI]  sampai  [FOTO DAYA SELESAI]"
+    echo ""
+    echo "Catatan: jika hanya ingin build/cache program, jalankan:"
+    echo "  bash comparison.sh --build-only"
+    echo "============================================================================="
+    echo ""
+}
+
+print_no_photo_phase() {
+    local phase="$1"
+    echo "[FOTO DAYA] Tidak perlu foto: ${phase}."
+}
+
+print_photo_start() {
+    local label="$1"
+    local run="$2"
+    local total="$3"
+    echo ""
+    echo "[FOTO DAYA MULAI] Skenario: ${label} | Run ${run}/${total}"
+    echo "Ambil/foto data daya sekarang, selama program sedang berjalan."
+}
+
+print_photo_end() {
+    local label="$1"
+    local run="$2"
+    local elapsed="$3"
+    echo "[FOTO DAYA SELESAI] Skenario: ${label} | Run ${run} selesai (${elapsed} ms)."
+    echo "Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya."
+}
+
+print_power_photo_guide
+
 # ===================== KOMPILASI =====================
 echo "============================================================================="
 echo "                          KOMPILASI EXECUTABLE"
 echo "============================================================================="
+print_no_photo_phase "kompilasi/build executable"
 CC="gcc-15"
 if ! command -v gcc-15 &> /dev/null; then
     CC="gcc"
@@ -61,6 +113,19 @@ $CC -O3 -fopenmp -o "${SCRIPT_DIR}/fsrcnn_baseline" "${SCRIPT_DIR}/fsrcnn_baseli
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_syncpilot" "${SCRIPT_DIR}/fsrcnn_syncpilot.c" "${SCRIPT_DIR}/../../framework/syncpilot.c" -lpthread -lm
 echo "Kompilasi selesai."
 echo ""
+
+if [ "$BUILD_ONLY" -eq 1 ]; then
+    echo "============================================================================="
+    echo "                         MODE BUILD-ONLY / CACHE"
+    echo "============================================================================="
+    echo "Executable sudah berhasil dibuat."
+    echo "Benchmark TIDAK dijalankan, jadi data daya TIDAK perlu difoto."
+    echo "Jalankan tanpa --build-only jika sudah siap mengukur eksekusi:"
+    echo "  bash comparison.sh"
+    echo "============================================================================="
+    echo ""
+    exit 0
+fi
 
 # ===================== VALIDASI INPUT =====================
 if [ ! -f "$INPUT_PATH" ]; then
@@ -124,6 +189,7 @@ run_scenario() {
 # ===================== GROUND TRUTH GENERATION =====================
 GROUND_TRUTH="${SCRIPT_DIR}/output_baseline_ground_truth.yuv"
 echo ">> Membuat ground truth dari Baseline (fsrcnn_baseline)..."
+print_no_photo_phase "pembuatan ground truth pembanding"
 "${SCRIPT_DIR}/fsrcnn_baseline" "$INPUT_PATH" "$GROUND_TRUTH" > /dev/null 2>&1
 echo "   Ground truth selesai: $(du -h "$GROUND_TRUTH" | awk '{print $1}')"
 echo ""
@@ -165,6 +231,7 @@ for i in "${!SCENARIOS[@]}"; do
     for ((run=1; run<=NUM_RUNS; run++)); do
         rm -f "$output_file"
 
+        print_photo_start "$label" "$run" "$NUM_RUNS"
         start_time=$(get_time_ms)
         run_scenario "$runner" "$output_file" "$workers"
         end_time=$(get_time_ms)
@@ -173,6 +240,7 @@ for i in "${!SCENARIOS[@]}"; do
         total_time=$((total_time + elapsed))
         [ $elapsed -lt $min_time ] && min_time=$elapsed
         [ $elapsed -gt $max_time ] && max_time=$elapsed
+        print_photo_end "$label" "$run" "$elapsed"
 
         if [ "$run" -eq 1 ]; then
             printf "     Run %d/%d (Profil): %d ms\n" "$run" "$NUM_RUNS" "$elapsed"
@@ -203,6 +271,7 @@ done
 echo "============================================================================="
 echo "                       MENGHITUNG PSNR"
 echo "============================================================================="
+print_no_photo_phase "menghitung PSNR"
 echo ""
 
 declare -a PSNR_VALUES
@@ -280,6 +349,7 @@ echo ""
 echo "============================================================================="
 echo "                    CEK KONSISTENSI OUTPUT"
 echo "============================================================================="
+print_no_photo_phase "cek konsistensi output"
 echo ""
 for i in "${!SCENARIOS[@]}"; do
     label="${LABELS[$i]}"
@@ -302,6 +372,7 @@ echo ""
 echo "============================================================================="
 echo "                  MENULIS DATA & MEMBUAT GRAFIK (GNUPLOT)"
 echo "============================================================================="
+print_no_photo_phase "menulis data dan membuat grafik"
 echo ""
 DAT_FILE="${SCRIPT_DIR}/benchmark_data.dat"
 echo "# Skenario Time_ms Throughput_fps" > "$DAT_FILE"
