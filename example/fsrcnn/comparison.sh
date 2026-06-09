@@ -46,6 +46,8 @@ SCENARIOS=(
     "B"
     "C"
     "D"
+    "E"
+    "F"
 )
 
 LABELS=(
@@ -53,17 +55,19 @@ LABELS=(
     "A (SyncPilot, 4 workers)"
     "B (SyncPilot, 8 workers)"
     "C (SyncPilot Hybrid, 4w+2i)"
-    "D (SyncPilot Hybrid, 8w+2i)"
+    "D (SyncPilot Hybrid, 8w+1i)"
+    "E (SyncPilot Hybrid, 4w+4i)"
+    "F (Two-pool, 4 big + 4 little)"
 )
 
 # Executable yang digunakan tiap skenario: baseline atau syncpilot
-SCENARIO_RUNNERS=(baseline syncpilot syncpilot hybrid hybrid)
+SCENARIO_RUNNERS=(baseline syncpilot syncpilot hybrid hybrid hybrid twopool)
 
 # Konfigurasi argumen untuk fsrcnn_syncpilot: <num_workers>
-SCENARIO_WORKERS=(8 4 8 4 8)
+SCENARIO_WORKERS=(8 4 8 4 8 4 8)
 
 # Konfigurasi argumen khusus hybrid: <inner_threads>
-SCENARIO_INNER_THREADS=(1 1 1 2 2)
+SCENARIO_INNER_THREADS=(1 1 1 2 1 4 1)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
@@ -122,6 +126,7 @@ echo "Using compiler: $CC"
 $CC -O3 -fopenmp -o "${SCRIPT_DIR}/fsrcnn_baseline" "${SCRIPT_DIR}/fsrcnn_baseline.c" -lm
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_syncpilot" "${SCRIPT_DIR}/fsrcnn_syncpilot.c" "${SCRIPT_DIR}/../../framework/syncpilot.c" -lpthread -lm
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_syncpilot_hybrid" "${SCRIPT_DIR}/fsrcnn_syncpilot_hybrid.c" "${SCRIPT_DIR}/../../framework/syncpilot.c" -lpthread -lm
+$CC -O3 -o "${SCRIPT_DIR}/fsrcnn_syncpilot_twopool" "${SCRIPT_DIR}/fsrcnn_syncpilot_twopool.c" "${SCRIPT_DIR}/../../framework/syncpilot.c" -lpthread -lm
 echo "Kompilasi selesai."
 echo ""
 
@@ -200,6 +205,8 @@ run_scenario() {
         OMP_NUM_THREADS="$workers" "${SCRIPT_DIR}/fsrcnn_baseline" "$INPUT_PATH" "$output_file" > /dev/null 2>&1
     elif [ "$runner" = "hybrid" ]; then
         "${SCRIPT_DIR}/fsrcnn_syncpilot_hybrid" "$INPUT_PATH" "$output_file" "$workers" "$inner_threads" > /dev/null 2>&1
+    elif [ "$runner" = "twopool" ]; then
+        "${SCRIPT_DIR}/fsrcnn_syncpilot_twopool" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     else
         "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     fi
@@ -257,6 +264,8 @@ for i in "${!SCENARIOS[@]}"; do
         echo "     Config: executable=fsrcnn_baseline, OMP_NUM_THREADS=${workers}"
     elif [ "$runner" = "hybrid" ]; then
         echo "     Config: executable=fsrcnn_syncpilot_hybrid, workers=${workers}, inner_threads=${inner_threads}"
+    elif [ "$runner" = "twopool" ]; then
+        echo "     Config: executable=fsrcnn_syncpilot_twopool, workers=${workers}, mode=4 big + 4 little"
     else
         echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}"
     fi
@@ -427,6 +436,8 @@ for i in "${!SCENARIOS[@]}"; do
         short_label="${scen} (Baseline, ${workers}t)"
     elif [ "$runner" = "hybrid" ]; then
         short_label="${scen} (Hybrid, ${workers}w+${inner_threads}i)"
+    elif [ "$runner" = "twopool" ]; then
+        short_label="${scen} (Two-pool, 4b+4l)"
     else
         short_label="${scen} (SyncPilot, ${workers}w)"
     fi

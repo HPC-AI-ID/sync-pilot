@@ -76,6 +76,7 @@ typedef struct {
 
     // === Initial Calibration Runtime Cost Estimation (IC-RCE) ===
     int enable_calibration;           // 1 = ukur biaya stage di task pertama, 0 = skip
+    int enable_two_pool;              // 1 = pisahkan preferensi big/little worker berdasarkan IC-RCE
 
 } PipelineConfig;
 

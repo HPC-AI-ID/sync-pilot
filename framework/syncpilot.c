@@ -104,7 +104,7 @@ static int select_dynamic_stage_locked(PipelineEngine *engine, int core_class, i
     int num_stages = engine->config.num_stages;
     double heavy_threshold = 0.0;
 
-    if (engine->calibration_done && core_class >= 0) {
+    if (engine->config.enable_two_pool && engine->calibration_done && core_class >= 0) {
         heavy_threshold = average_stage_cost_locked(engine) * 0.75;
     }
 
