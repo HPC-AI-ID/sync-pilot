@@ -1,5 +1,8 @@
-# Skenario Time_ms Throughput_fps Energy_J
-"A (Static, 8t)" 2612 57.43 ?
-"B (SyncPilot, 4w)" 2537 59.12 ?
-"C (SyncPilot, 8w)" 2337 64.18 ?
-"D (SyncPilot, 12w)" 2586 58.00 ?
+# Skenario Time_ms Throughput_fps
+"BASE (Baseline, 8t)" 48474 3.09
+"A (SyncPilot, 4w)" 12245 12.25
+"B (SyncPilot, 8w)" 16699 8.98
+"C (Hybrid, 4w+2i)" 14295 10.49
+"D (Hybrid, 8w+1i)" 17061 8.79
+"E (Hybrid, 4w+4i)" 15082 9.95
+"F (Two-pool, 4b+4l)" 18333 8.18

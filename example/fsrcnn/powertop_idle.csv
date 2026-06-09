@@ -1,0 +1,856 @@
+____________________________________________________________________
+			P o w e r T O P
+
+____________________________________________________________________
+ *  *  *   System Information   *  *  *
+
+PowerTOP Version;2.14 ran at Thu May 21 11:57:43 2026
+
+Kernel Version;Linux version 5.10.110-rockchip-rk3588
+System Name;
+CPU Information;8
+OS Information;Ubuntu 22.04.5 LTS
+
+Target: 1 units/s;System:  2685.6 wakeup/s;CPU:  137.9% usage;GPU: 0 ops/s;GFX: 78.5 wakeups/s;VFS: 0 ops/s;
+
+____________________________________________________________________
+ *  *  *   Top 10 Power Consumers   *  *  *
+
+Usage;Events/s;Category;Description
+ 21.4%;332.0;Process;[PID 1527] /usr/lib/xorg/Xorg -core :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch 
+ 38.6%;256.8;Process;[PID 5405] /usr/lib/chromium-browser/chromium-browser --type=renderer --enable-crashpad --crashpad-handler-pid=0 --enable-crash
+  1.9%;362.1;Timer;tick_sched_timer
+  2.2%;217.6;Interrupt;[2] IPI
+  0.3%;203.7;Interrupt;[27] fd880000.i2c
+  0.1%;141.8;kWork;check_group_sync_update_worker
+  0.4%;121.7;kWork;dbs_work_handler
+ 18.1%; 40.3;Process;[PID 4069] /usr/lib/chromium-browser/chromium-browser --type=gpu-process --enable-crashpad --crashpad-handler-pid=0 --enable-cr
+  0.4%; 97.4;Interrupt;[1] IPI
+  0.8%; 88.5;Interrupt;[19] fb000000.gpu
+
+____________________________________________________________________
+ *  *  *   Processor Idle State Report   *  *  *
+
+Package;0
+WFI;  8.7%
+cpu-sleep; 68.8%
+;
+;
+
+CPU;0
+WFI; 14.6%;   0.4 ms
+cpu-sleep; 55.5%;   1.5 ms
+CPU;1
+WFI;  6.0%;   0.7 ms
+cpu-sleep; 66.0%;   3.7 ms
+CPU;2
+WFI;  7.3%;   0.6 ms
+cpu-sleep; 77.7%;   3.6 ms
+CPU;3
+WFI;  6.7%;   0.5 ms
+cpu-sleep; 74.8%;   4.3 ms
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+;;
+
+Package;1
+WFI;  4.6%
+cpu-sleep; 77.9%
+;
+;
+
+CPU;4
+WFI;  5.0%;   0.7 ms
+cpu-sleep; 78.9%;   6.9 ms
+CPU;5
+WFI;  4.2%;   0.7 ms
+cpu-sleep; 76.7%;   7.4 ms
+;;
+;;
+;;
+;;
+
+Package;2
+WFI; 10.5%
+cpu-sleep; 74.9%
+;
+;
+
+CPU;6
+WFI; 10.0%;   0.7 ms
+cpu-sleep; 74.8%;   5.2 ms
+CPU;7
+WFI; 11.0%;   0.6 ms
+cpu-sleep; 74.6%;   6.0 ms
+;;
+;;
+;;
+;;
+
+____________________________________________________________________
+ *  *  *   Processor Frequency Report   *  *  *
+
+Package;0
+ 408 MHz;  10.8% 
+ 600 MHz;   7.8% 
+ 816 MHz;   1.8% 
+1008 MHz;   0.6% 
+1200 MHz;   0.1% 
+1416 MHz;   0.4% 
+1.61 GHz;   0.3% 
+1.80 GHz;  35.6% 
+Idle;  42.7% 
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+
+CPU 0
+ 408 MHz;   4.9% 
+ 600 MHz;   3.4% 
+ 816 MHz;   0.8% 
+1008 MHz;   0.4% 
+1200 MHz;   0.1% 
+1416 MHz;   0.1% 
+1.61 GHz;   0.2% 
+1.80 GHz;  19.6% 
+Idle;  70.5% 
+CPU 1
+ 408 MHz;   7.7% 
+ 600 MHz;   3.3% 
+ 816 MHz;   1.1% 
+1008 MHz;   0.1% 
+1200 MHz;   0.0% 
+1416 MHz;   0.2% 
+1.61 GHz;   0.1% 
+1.80 GHz;  14.8% 
+Idle;  72.7% 
+CPU 2
+ 408 MHz;   1.4% 
+ 600 MHz;   1.3% 
+ 816 MHz;   0.6% 
+1008 MHz;   0.1% 
+1200 MHz;   0.0% 
+1416 MHz;   0.1% 
+1.61 GHz;   0.1% 
+1.80 GHz;  10.5% 
+Idle;  85.8% 
+CPU 3
+ 408 MHz;   1.4% 
+ 600 MHz;   1.8% 
+ 816 MHz;   0.6% 
+1008 MHz;   0.2% 
+1200 MHz;   0.0% 
+1416 MHz;   0.2% 
+1.61 GHz;   0.1% 
+1.80 GHz;  13.8% 
+Idle;  81.9% 
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+
+Package;1
+ 408 MHz;   0.0% 
+ 600 MHz;   0.0% 
+ 816 MHz;   0.0% 
+1008 MHz;   0.0% 
+1200 MHz;   0.0% 
+1416 MHz;   0.0% 
+1.61 GHz;   0.0% 
+1.80 GHz;   0.0% 
+2.02 GHz;   0.0% 
+2.21 GHz;   0.0% 
+2.26 GHz;   0.0% 
+2.31 GHz;   0.0% 
+2.36 GHz;   0.0% 
+2.40 GHz;   0.0% 
+Idle; 100.0% 
+;
+;
+;
+;
+
+CPU 4
+ 408 MHz;   0.0% 
+ 600 MHz;   0.0% 
+ 816 MHz;   0.0% 
+1008 MHz;   0.0% 
+1200 MHz;   0.0% 
+1416 MHz;   0.0% 
+1.61 GHz;   0.0% 
+1.80 GHz;   0.0% 
+2.02 GHz;   0.0% 
+2.21 GHz;   0.0% 
+2.26 GHz;   0.0% 
+2.31 GHz;   0.0% 
+2.36 GHz;   0.0% 
+2.40 GHz;   0.0% 
+Idle; 100.0% 
+CPU 5
+ 408 MHz;   0.0% 
+ 600 MHz;   0.0% 
+ 816 MHz;   0.0% 
+1008 MHz;   0.0% 
+1200 MHz;   0.0% 
+1416 MHz;   0.0% 
+1.61 GHz;   0.0% 
+1.80 GHz;   0.0% 
+2.02 GHz;   0.0% 
+2.21 GHz;   0.0% 
+2.26 GHz;   0.0% 
+2.31 GHz;   0.0% 
+2.36 GHz;   0.0% 
+2.40 GHz;   0.0% 
+Idle; 100.0% 
+;
+;
+;
+;
+
+Package;2
+ 408 MHz;   3.3% 
+ 600 MHz;   3.1% 
+ 816 MHz;   2.5% 
+1008 MHz;   1.2% 
+1200 MHz;   1.2% 
+1416 MHz;   3.2% 
+1.61 GHz;   2.3% 
+1.80 GHz;   2.8% 
+2.02 GHz;   1.7% 
+2.21 GHz;   0.4% 
+2.26 GHz;   0.1% 
+2.31 GHz;   0.3% 
+2.36 GHz;   0.0% 
+2.40 GHz;   1.1% 
+Idle;  76.9% 
+;
+;
+;
+;
+
+CPU 6
+ 408 MHz;   2.0% 
+ 600 MHz;   2.3% 
+ 816 MHz;   1.9% 
+1008 MHz;   0.7% 
+1200 MHz;   0.6% 
+1416 MHz;   2.0% 
+1.61 GHz;   1.4% 
+1.80 GHz;   1.3% 
+2.02 GHz;   1.0% 
+2.21 GHz;   0.3% 
+2.26 GHz;   0.0% 
+2.31 GHz;   0.2% 
+2.36 GHz;   0.0% 
+2.40 GHz;   0.8% 
+Idle;  85.5% 
+CPU 7
+ 408 MHz;   1.4% 
+ 600 MHz;   1.0% 
+ 816 MHz;   0.9% 
+1008 MHz;   0.6% 
+1200 MHz;   0.7% 
+1416 MHz;   1.9% 
+1.61 GHz;   1.2% 
+1.80 GHz;   2.4% 
+2.02 GHz;   1.2% 
+2.21 GHz;   0.1% 
+2.26 GHz;   0.1% 
+2.31 GHz;   0.1% 
+2.36 GHz;   0.0% 
+2.40 GHz;   0.5% 
+Idle;  87.9% 
+;
+;
+;
+;
+
+____________________________________________________________________
+ *  *  *   Overview of Software Power Consumers   *  *  *
+
+Usage;Wakeups/s;GPU ops/s;Disk IO/s;GFX Wakeups/s;Category;Description
+214.0 ms/s;332.0;;; 24.1;Process;[PID 1527] /usr/lib/xorg/Xorg -core :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch 
+385.7 ms/s;256.8;;;;Process;[PID 5405] /usr/lib/chromium-browser/chromium-browser --type=renderer --enable-crashpad --crashpad-handler-pid=0 --enable-crash
+ 18.7 ms/s;362.1;;;;Timer;tick_sched_timer
+ 22.0 ms/s;217.6;;;;Interrupt;[2] IPI
+  3.1 ms/s;203.7;;;;Interrupt;[27] fd880000.i2c
+  1.5 ms/s;141.8;;;;kWork;check_group_sync_update_worker
+  3.8 ms/s;121.7;;;;kWork;dbs_work_handler
+180.5 ms/s; 40.3;;;  3.5;Process;[PID 4069] /usr/lib/chromium-browser/chromium-browser --type=gpu-process --enable-crashpad --crashpad-handler-pid=0 --enable-cr
+  3.9 ms/s; 97.4;;;;Interrupt;[1] IPI
+  7.8 ms/s; 88.5;;;;Interrupt;[19] fb000000.gpu
+  2.1 ms/s; 49.2;;;;Interrupt;[96] feb20000.spi
+  6.0 ms/s; 47.5;;;;Interrupt;[6] tasklet(softirq)
+  2.5 ms/s; 40.7;;;;Process;[PID 12] [rcu_sched]
+  1.9 ms/s; 35.5;;;;Process;[PID 1557] [RTW_CMD_THREAD]
+ 15.3 ms/s; 19.7;;; 34.9;Process;[PID 2127] xfwm4 --display :0.0 --sm-client-id 217e20028-a1be-4900-b10a-d371808d67d7 
+  0.7 ms/s; 34.1;;;;Interrupt;[69] fdd97e00.iommu
+ 29.5 ms/s; 21.2;;;;Process;[PID 3911] /usr/lib/chromium-browser/chromium-browser --enable-pinch --enable-crashpad 
+ 10.1 ms/s; 24.5;;;;Interrupt;[7] sched(softirq)
+ 26.9 ms/s; 16.8;;;;Process;[PID 5721] /snap/firefox/7421/usr/lib/firefox/firefox /home/orangepi/FSRCNN/sync-pilot/example/fsrcnn/fsrcnn_throughput.png 
+  3.8 ms/s; 23.3;;;;Interrupt;[23] ohci_hcd:usb4
+402.0 us/s; 23.0;;;;kWork;handle_update
+ 41.9 ms/s;  5.0;;;;Process;[PID 6662] /proc/self/exe --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --d
+  2.8 ms/s; 17.7;;;  9.8;Process;[PID 1678] /usr/lib/xorg/Xorg -core :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch 
+  6.6 ms/s; 17.9;;;;Timer;hrtimer_wakeup
+639.3 us/s; 19.9;;;;kWork;pm_runtime_work
+  0.0 us/s; 19.9;;;;kWork;commit_work
+ 36.0 ms/s;  5.6;;;;Process;[PID 17691] /proc/self/exe --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --
+ 49.4 ms/s;;;;;Process;[PID 3433] htop 
+270.7 us/s; 18.7;;;;kWork;flip_worker
+  8.6 ms/s; 13.5;;;;Process;[PID 4068] /usr/lib/chromium-browser/chromium-browser --type=gpu-process --enable-crashpad --crashpad-handler-pid=0 --enable-cr
+  2.2 ms/s; 14.7;;;;Process;[PID 18625] docker
+  2.9 ms/s; 14.3;;;;Process;[PID 405] [loop4]
+  0.8 ms/s; 13.1;;;;Interrupt;[17] fb000000.gpu
+  0.8 ms/s; 12.2;;;;Process;[PID 18613] docker
+389.8 us/s; 11.8;;;;Process;[PID 18633] docker
+  0.8 ms/s; 11.6;;;;kWork;devfreq_monitor
+115.2 us/s; 11.6;;;;Process;[PID 18654] docker
+  4.9 us/s; 10.8;;;;kWork;gpu_idle_worker
+365.7 us/s; 10.2;;;;Process;[PID 18644] docker
+  2.8 ms/s;  8.7;;;  1.9;Process;[PID 2112] /usr/libexec/at-spi2-registryd --use-gnome-session 
+ 16.9 ms/s;  3.3;;;;Process;[PID 18643] docker
+  0.0 us/s;  9.8;;;;kWork;schedule_on_tick
+  1.3 ms/s;  9.1;;;;kWork;pending_submission_worker
+ 12.6 ms/s;  4.2;;;;Process;[PID 18624] docker
+  0.0 us/s;  8.9;;;;kWork;input_dev_poller_work
+471.9 us/s;  8.7;;;;kWork;blk_mq_run_work_fn
+  1.9 ms/s;  8.1;;;;Process;[PID 183] [spi2]
+  2.9 ms/s;  7.7;;;;Process;[PID 17701] /proc/self/exe --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --
+338.0 us/s;  8.7;;;;Process;[PID 6771] /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock 
+ 12.8 ms/s;  3.7;;;;Process;[PID 18612] docker
+519.5 us/s;  8.5;;;;kWork;kbase_pm_gpu_poweroff_wait_wq
+ 11.7 ms/s;  3.5;;;;Process;[PID 18632] docker
+  2.4 ms/s;  6.2;;;  3.7;Process;[PID 6608] /usr/share/code/code /home/orangepi/FSRCNN/sync-pilot/example/fsrcnn/logs/fsrcnn_syncpilot.txt 
+ 19.2 ms/s; 0.19;;;;Process;[PID 18587] powertop --csv=/home/orangepi/FSRCNN/sync-pilot/example/fsrcnn/powertop_idle.csv --time=5 
+ 18.6 ms/s;;;;;Process;[PID 18624] code
+  5.4 ms/s;  5.0;;;;Process;[PID 18653] docker
+  1.1 ms/s;  6.6;;;;Process;[PID 1579] /usr/lib/xorg/Xorg -core :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch 
+267.5 us/s;  6.0;;;;Interrupt;[99] fec10000.saradc
+  1.2 ms/s;  4.8;;;;Process;[PID 18614] docker
+ 11.7 ms/s;;;;;Interrupt;[13] arch_timer
+  1.1 ms/s;  3.9;;;;Process;[PID 6673] /proc/self/exe --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --c
+105.2 us/s;  4.2;;;;kWork;rockchip_system_monitor_thermal
+  3.1 ms/s;  2.9;;;  0.2;Process;[PID 2970] /usr/bin/python3 /usr/bin/x-terminal-emulator 
+  2.5 ms/s;  2.9;;;;Process;[PID 2160] xfsettingsd --display :0.0 --sm-client-id 2cfcf09f5-4537-4bf8-9aa5-3d324696cfc6 
+  4.4 ms/s;  2.1;;;;Process;[PID 13242] [kworker/u16:1]
+687.7 us/s;  3.5;;;;Process;[PID 18628] docker
+156.0 us/s;  3.7;;;;Process;[PID 224] [mali-simple-pow]
+627.9 us/s;  3.5;;;;Process;[PID 17721] /proc/self/exe --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --
+  2.9 ms/s;  2.5;;;;Process;[PID 3957] /usr/lib/chromium-browser/chromium-browser --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-
+  0.8 ms/s;  3.3;;;;Process;[PID 18635] docker
+  3.8 ms/s;  1.9;;;;Process;[PID 5921] [kworker/0:2]
+  0.8 ms/s;  3.1;;;;Process;[PID 18649] docker
+  8.5 ms/s;;;;;Process;[PID 18632] code
+498.2 us/s;  3.1;;;;Process;[PID 18616] docker
+  8.3 ms/s;;;;;Process;[PID 18643] code
+  8.2 ms/s;;;;;Process;[PID 18653] code
+  4.0 ms/s;  1.5;;;;Process;[PID 17661] /usr/share/code/code --type=zygote 
+509.9 us/s;  2.9;;;;Process;[PID 18618] docker
+  0.8 ms/s;  2.7;;;;Process;[PID 18655] docker
+  7.6 ms/s;;;;;Interrupt;[9] RCU(softirq)
+  0.7 ms/s;  2.7;;;;Process;[PID 18646] docker
+  6.5 ms/s;  0.4;;;;Process;[PID 16406] [kworker/6:3]
+ 99.6 us/s;  2.9;;;;kWork;free_work
+  7.4 ms/s;;;;;Process;[PID 15076] [kworker/7:0]
+424.9 us/s;  2.7;;;;Process;[PID 18627] docker
+  1.8 ms/s;  2.1;;;;Process;[PID 6218] /snap/firefox/7421/usr/lib/firefox/firefox -contentproc -isForBrowser -prefsHandle 0:43633 -prefMapHandle 1:276972 -
+288.8 us/s;  2.5;;;;Interrupt;[137] nvme0q7
+  1.0 ms/s;  2.1;;;;Process;[PID 6772] /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock 
+ 39.6 us/s;  2.5;;;;kWork;flush_to_ldisc
+  0.8 ms/s;  2.1;;;;Process;[PID 939] /usr/sbin/NetworkManager --no-daemon 
+179.1 us/s;  2.3;;;;Process;[PID 18626] docker
+533.2 us/s;  2.1;;;;Process;[PID 5904] /snap/firefox/7421/usr/lib/firefox/firefox /home/orangepi/FSRCNN/sync-pilot/example/fsrcnn/fsrcnn_throughput.png 
+463.7 us/s;  2.1;;;;Process;[PID 18645] docker
+405.3 us/s;  2.1;;;;Process;[PID 18657] docker
+246.8 us/s;  2.1;;;;Interrupt;[133] nvme0q3
+268.3 us/s;  1.9;;;;Process;[PID 18636] docker
+  4.6 ms/s; 0.19;;;;Process;[PID 18612] code
+  1.2 ms/s;  1.5;;;;Process;[PID 18630] docker
+  5.0 ms/s;;;;;Interrupt;[14] rk_timer
+474.5 us/s;  1.7;;;;Process;[PID 18647] docker
+
+____________________________________________________________________
+ *  *  *   Device Power Report   *  *  *
+
+Usage;Device Name
+138.0%;CPU use
+138.0%;CPU use
+138.0%;CPU use
+ 78.4%;Display backlight
+ 78.4%;Display backlight
+100.0%;runtime-fd7c08ec.hclk_vo1
+100.0%;runtime-fddf0000.i2s
+100.0%;runtime-xhci-hcd.8.auto
+100.0%;runtime-fd7c08dc.pclk_vo0_grf
+100.0%;runtime-fd7c092c.hclk_sdio_pre
+100.0%;runtime-fd7c08dc.aclk_hdcp0_pre
+100.0%;USB device:  USB OPTICAL MOUSE
+100.0%;Radio device: 8188eu
+100.0%;USB device: xHCI Host Controller
+100.0%;USB device: Asus GK1050 Gaming Keyboard
+100.0%;runtime-fdd97e00.iommu
+100.0%;PCI Device: Silicon Motion, Inc. SM2263EN/SM2263XT SSD Controller
+100.0%;USB device: 802.11n NIC (Realtek)
+100.0%;PCI Device: Rockchip Electronics Co., Ltd Device 3588
+100.0%;runtime-fdd90000.vop
+100.0%;runtime-fd5dc000.syscon:usb2-phy@c000
+100.0%;USB device: Generic Platform OHCI controller
+100.0%;runtime-fd7c08ec.pclk_vo1_grf
+100.0%;runtime-fd7c08a4.hclk_rkvdec1_pre
+100.0%;runtime-fde80000.hdmi
+100.0%;runtime-fc000000.usb
+100.0%;runtime-fc840000.usb
+100.0%;runtime-fcd00000.usb
+100.0%;runtime-fd7c0910.pclk_av1_pre
+100.0%;USB device: Generic Platform OHCI controller
+100.0%;runtime-fc800000.usb
+100.0%;runtime-fd7c08a0.aclk_rkvdec0_pre
+100.0%;runtime-fd7c0910.aclk_av1_pre
+100.0%;runtime-fd7c08ec.aclk_hdcp1_pre
+100.0%;runtime-fd7c0868.aclk_isp1_pre
+100.0%;runtime-usbhost3_0
+100.0%;runtime-fd5d0000.syscon:usb2-phy@0
+100.0%;runtime-fd7c08a4.aclk_rkvdec1_pre
+100.0%;runtime-fde50000.dp
+100.0%;runtime-fc8c0000.usb
+100.0%;runtime-fd5d8000.syscon:usb2-phy@8000
+100.0%;runtime-xhci-hcd.6.auto
+100.0%;runtime-usbdrd3_0
+100.0%;runtime-fd7c08a8.aclk_usb
+100.0%;runtime-fd7c08dc.hclk_vo0
+100.0%;runtime-fd7c087c.hclk_nvm
+100.0%;runtime-fd7c0868.hclk_isp1_pre
+100.0%;runtime-fe1c0000.ethernet
+100.0%;runtime-fd7c08a0.hclk_rkvdec0_pre
+100.0%;runtime-fd7c08b0.aclk_vdpu_low_pre
+100.0%;runtime-fc880000.usb
+100.0%;runtime-fd7c08c0.aclk_rkvenc1_pre
+100.0%;runtime-fd7c08b0.aclk_jpeg_decoder_pre
+100.0%;runtime-fd7c08c0.hclk_rkvenc1_pre
+100.0%;runtime-fd7c08a8.hclk_usb
+ 62.1%;runtime-fb000000.gpu
+ 20.4 pkts/s;Network interface: wlx98ded0199125 (8188eu)
+  2.0%;runtime-feb20000.spi
+  0.0%;runtime-fdb50400.vdpu
+  0.0%;runtime-fd8b0020.pwm
+  0.0%;runtime-fdf66200.qos
+  0.0%;runtime-fdaf0000.pvtm
+  0.0%;runtime-firmware:optee
+  0.0%;runtime-fdf40800.qos
+  0.0%;runtime-reg-dummy
+  0.0%;runtime-fdcc0000.rkisp
+  0.0%;runtime-fd5a4000.syscon
+  0.0%;runtime-fdbef000.iommu
+  0.0%;runtime-fec90000.i2c
+  0.0%;runtime-fdab0000.npu
+  0.0%;runtime-fd880000.i2c
+  0.0%;runtime-spi5.0
+  0.0%;runtime-spi2.0
+  0.0%;runtime-fdf40000.qos
+  0.0%;runtime-fdf66e00.qos
+  0.0%;runtime-pinctrl
+  0.0%;runtime-fd58a000.syscon
+  0.0%;runtime-fed60000.hdmiphy
+  0.0%;runtime-rkvenc-ccu
+  0.0%;runtime-fd8d8000.power-management:power-controller
+  0.0%;runtime-vcc-3v3-sd-s0
+  0.0%;runtime-fdf67200.qos
+  0.0%;runtime-fdf40500.qos
+  0.0%;runtime-fdf3e600.qos
+  0.0%;runtime-fd5dc000.syscon
+  0.0%;runtime-dmabuf
+  0.0%;runtime-fdf64000.qos
+  0.0%;runtime-display-subsystem
+  0.0%;runtime-fdf60000.qos
+  0.0%;runtime-fdf41100.qos
+  0.0%;runtime-fiq_debugger.0
+  0.0%;runtime-fec10000.saradc
+  0.0%;runtime-fd5a2000.syscon
+  0.0%;runtime-fdf41000.qos
+  0.0%;runtime-fdbe0000.rkvenc-core
+  0.0%;runtime-vcc5v0-usbdcin
+  0.0%;runtime-fed60000.hdmiphy:clk-port
+  0.0%;runtime-vcc-1v1-nldo-s3
+  0.0%;runtime-fdf61000.qos
+  0.0%;runtime-fd5e8000.syscon
+  0.0%;runtime-fd104000.debug
+  0.0%;runtime-fdb70000.rga
+  0.0 pkts/s;Network interface: eth0 (rk_gmac-dwmac)
+  0.0%;runtime-backlight
+  0.0%;runtime-rk805-pwrkey.4.auto
+  0.0%;runtime-adc-keys
+  0.0%;runtime-fdbac800.iommu
+  0.0%;runtime-fdb90480.iommu
+  0.0%;runtime-feda0000.phy
+  0.0%;runtime-fd5e0000.syscon
+  0.0%;USB device: xHCI Host Controller
+  0.0%;USB device: EHCI Host Controller
+  0.0%;USB device: xHCI Host Controller
+  0.0%;USB device: xHCI Host Controller
+  0.0%;USB device: EHCI Host Controller
+  0.0 pkts/s;nic:docker0
+  0.0%;runtime-mtd_vendor_storage
+  0.0%;runtime-gpio-leds
+  0.0%;runtime-fdf60400.qos
+  0.0%;runtime-arm-pmu
+  0.0%;runtime-ff001000.sram
+  0.0%;runtime-snd-soc-dummy
+  0.0%;runtime-fdf35200.qos
+  0.0%;runtime-fdc38700.iommu
+  0.0%;runtime-fee20000.phy
+  0.0%;runtime-fdf80000.qos
+  0.0%;runtime-fd588000.syscon
+  0.0%;runtime-fd592000.syscon
+  0.0%;runtime-vcc5v0-sys
+  0.0%;runtime-Fixed MDIO bus.0
+  0.0%;runtime-rk806-pinctrl.3.auto
+  0.0%;runtime-fdf62000.qos
+  0.0%;runtime-clocks
+  0.0%;runtime-fdf61400.qos
+  0.0%;runtime-fdbb0000.iep
+  0.0%;runtime-fdba4800.iommu
+  0.0%;runtime-fdbac000.jpege-core
+  0.0%;runtime-fdba8000.jpege-core
+  0.0%;runtime-fdca0000.iommu
+  0.0%;runtime-hdmi-audio-codec.2.auto
+  0.0%;runtime-fdbd0000.rkvenc-core
+  0.0%;runtime-fdf81000.qos
+  0.0%;runtime-backlight_1
+  0.0%;runtime-vbus5v0-typec
+  0.0%;runtime-fec30000.gpio
+  0.0%;runtime-fda40000.pvtm
+  0.0%;runtime-fd5a0000.syscon
+  0.0%;runtime-fdf72200.qos
+  0.0%;runtime-fdf35600.qos
+  0.0%;runtime-febd0020.pwm
+  0.0%;runtime-fd5b4000.syscon
+  0.0%;runtime-fdf82000.qos
+  0.0%;runtime-fdcb7f00.iommu
+  0.0%;runtime-febc0000.serial
+  0.0%;runtime-fd5c8000.syscon
+  0.0%;runtime-fec80000.i2c
+  0.0%;runtime-psci
+  0.0%;runtime-fd5f0000.syscon
+  0.0%;runtime-fe2c0000.mmc
+  0.0%;runtime-fec00000.tsadc
+  0.0%;runtime-feae0000.timer
+  0.0%;runtime-combophy-avdd1v8
+  0.0%;runtime-fdba0800.iommu
+  0.0%;runtime-fdce0800.iommu
+  0.0%;runtime-fed80000.phy
+  0.0%;runtime-feaf0000.watchdog
+  0.0%;runtime-fdf66000.qos
+  0.0%;runtime-fdf66c00.qos
+  0.0%;runtime-fdb50800.iommu
+  0.0%;runtime-fd590000.syscon
+  0.0%;runtime-fdb60f00.iommu
+  0.0%;runtime-fdb50000.vepu
+  0.0%;runtime-fdf63000.qos
+  0.0%;runtime-fdf3e200.qos
+  0.0%;runtime-fdc38100.rkvdec-core
+  0.0%;runtime-fe470000.i2s
+  0.0%;runtime-fe5a0000.hwspinlock
+  0.0%;runtime-cpuinfo
+  0.0%;runtime-psci-cpuidle
+  0.0%;runtime-fdb30000.pvtm
+  0.0%;runtime-timer
+  0.0%;runtime-fd5bc000.syscon
+  0.0%;runtime-mpp-srv
+  0.0%;runtime-regulatory.0
+  0.0%;runtime-fe378000.rng
+  0.0%;runtime-hdmi-audio-codec.0.auto
+  0.0%;runtime-fd8d8000.power-management
+  0.0%;runtime-fda50000.pvtm
+  0.0%;runtime-rockchip-system-monitor
+  0.0%;runtime-fdce0000.rkcif
+  0.0%;runtime-fda60000.pvtm
+  0.0%;runtime-es8388-sound
+  0.0%;runtime-combophy-avdd0v85
+  0.0%;runtime-fdab9000.iommu
+  0.0%;runtime-vcc12v-dcin
+  0.0%;runtime-alarmtimer.7.auto
+  0.0%;runtime-fdf81200.qos
+  0.0%;runtime-fe2b0000.spi
+  0.0%;runtime-fdb70f00.iommu
+  0.0%;runtime-fdc30000.rkvdec-ccu
+  0.0%;runtime-fd10c000.cspmu
+  0.0%;runtime-fdf66a00.qos
+  0.0%;runtime-fdf39000.qos
+  0.0%;runtime-rk806-regulator.5.auto
+  0.0%;runtime-fdf60200.qos
+  0.0%;runtime-10f000.sram
+  0.0%;runtime-fdcb0000.rkisp
+  0.0%;I2C Device (7-0014): gt9271
+  0.0%;runtime-fd588000.syscon:reboot-mode
+  0.0%;runtime-fdf35000.qos
+  0.0%;runtime-fdb60000.rga
+  0.0%;runtime-vcc3v3-pcie2x1l2
+  0.0%;runtime-fdc48700.iommu
+  0.0%;runtime-fdf66800.qos
+  0.0%;runtime-fdf40600.qos
+  0.0%;runtime-fdf3e000.qos
+  0.0%;runtime-jpege-ccu
+  0.0%;runtime-fdf67000.qos
+  0.0%;runtime-fdf72400.qos
+  0.0%;runtime-fecc0000.otp
+  0.0%;runtime-fd598000.syscon
+  0.0%;runtime-fe190000.pcie
+  0.0%;runtime-fec40000.gpio
+  0.0%;runtime-dw-hdmi-qp-i2s-audio.1.auto
+  0.0%;runtime-fdf66400.qos
+  0.0%;runtime-fdbdf000.iommu
+  0.0%;runtime-fdba4000.jpege-core
+  0.0%;runtime-fdf40200.qos
+  0.0%;runtime-rockchip-suspend
+  0.0%;runtime-fd5a8000.syscon
+  0.0%;runtime-fe060000.dfi
+  0.0%;runtime-fd5d0000.syscon
+  0.0%;runtime-fd58c000.syscon
+  0.0%;runtime-fec50000.gpio
+  0.0%;runtime-fdb80000.rga
+  0.0%;runtime-fdf70000.qos
+  0.0%;runtime-serial8250
+  0.0%;runtime-fd5c4000.syscon
+  0.0%;runtime-fdf3e400.qos
+  0.0%;runtime-fd5d8000.syscon
+  0.0%;runtime-cpufreq-dt
+  0.0%;runtime-fedb0000.phy
+  0.0%;runtime-fdf72000.qos
+  0.0%;runtime-fdf35400.qos
+  0.0%;runtime-fdba0000.jpege-core
+  0.0%;runtime-fdbb0800.iommu
+  0.0%;runtime-hdmi0-sound
+  0.0%;runtime-fd5b5000.syscon
+  0.0%;runtime-110000.ramoops
+  0.0%;runtime-firmware:scmi
+  0.0%;runtime-fdba8800.iommu
+  0.0%;runtime-fd8a0000.gpio
+  0.0%;runtime-fddb0000.spdif-tx
+  0.0%;runtime-fd594000.syscon
+  0.0%;runtime-fe480000.i2s
+  0.0%;runtime-dmc
+  0.0%;runtime-fdf66600.qos
+  0.0%;runtime-fdf40400.qos
+  0.0%;runtime-fec20000.gpio
+  0.0%;runtime-fd5ac000.syscon
+  0.0%;runtime-dp0-sound
+  0.0%;I2C Adapter (i2c-7): rk3x-i2c
+  0.0%;runtime-fdf3d800.qos
+  0.0%;runtime-fdf82200.qos
+  0.0%;I2C Device (0-0042): rk8602
+  0.0%;I2C Adapter (i2c-10): ddc
+  0.0%;I2C Device (6-0022): fusb302
+  0.0%;I2C Device (6-0010): es8388
+  0.0%;I2C Adapter (i2c-6): rk3x-i2c
+  0.0%;I2C Device (0-0043): rk8603
+  0.0%;I2C Adapter (i2c-2): rk3x-i2c
+  0.0%;I2C Device (6-0051): hym8563
+  0.0%;I2C Adapter (i2c-0): rk3x-i2c
+  0.0%;I2C Device (2-0014): gt9271
+  0.0%;I2C Device (2-0042): rk8602
+  0.0%;I2C Adapter (i2c-9): fde50000.dp
+  0.0%;runtime-fee00000.phy
+  0.0%;runtime-fdcc7f00.iommu
+  0.0%;runtime-fdc48100.rkvdec-core
+  0.0%;runtime-fdb90000.jpegd
+  0.0%;runtime-feaa0000.i2c
+  0.0%;runtime-fdf61200.qos
+  0.0%;runtime-fd5ec000.syscon
+  0.0%;runtime-fdf36000.qos
+  0.0%;runtime-vcc5v0-usb
+  0.0%;runtime-fiq-debugger
+  0.0%;runtime-fdf71000.qos
+  0.0%;runtime-firmware:sdei
+  0.0%;runtime-fd5a6000.syscon
+  0.0%;runtime-fd5b0000.syscon
+____________________________________________________________________
+ *  *  *   Process Device Activity   *  *  *
+
+Process;Device
+systemd;/dev/autofs
+;/dev/kmsg
+;/dev/rfkill
+adbd;/dev/usb-ffs/adb/ep0
+;/dev/usb-ffs/adb/ep1
+;/dev/usb-ffs/adb/ep2
+systemd-journal;/dev/kmsg
+;/dev/kmsg
+haveged;/dev/random
+systemd-logind;/dev/input/event0
+;/dev/input/event10
+;/dev/input/event6
+;/dev/input/event8
+;/dev/input/event9
+wpa_supplicant;/dev/rfkill
+Xorg;/dev/dri/card0
+;/dev/dri/card0
+;/dev/input/event0
+;/dev/input/event10
+;/dev/input/event12
+;/dev/input/event3
+;/dev/input/event5
+;/dev/input/event6
+;/dev/input/event7
+;/dev/input/event8
+;/dev/input/event9
+;/dev/mali0
+pulseaudio;/dev/snd/controlC0
+;/dev/snd/controlC0
+;/dev/snd/controlC1
+;/dev/snd/controlC1
+;/dev/snd/controlC2
+;/dev/snd/controlC2
+bluetoothd;/dev/rfkill
+blueman-applet;/dev/rfkill
+chromium-browse;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/renderD128
+code;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+;/dev/dri/card0
+
+____________________________________________________________________
+ *  *  *   AHCI ALPM Residency Statistics - Not supported on this macine   *  *  *
+
+____________________________________________________________________
+ *  *  *   Software Settings in Need of Tuning   *  *  *
+
+Description;Script
+VM writeback timeout;echo '1500' > '/proc/sys/vm/dirty_writeback_centisecs';
+Autosuspend for USB device  USB OPTICAL MOUSE [4-1];echo 'auto' > '/sys/bus/usb/devices/4-1/power/control';
+Autosuspend for USB device Asus GK1050 Gaming Keyboard [3-1];echo 'auto' > '/sys/bus/usb/devices/3-1/power/control';
+Runtime PM for PCI Device Rockchip Electronics Co., Ltd Device 3588;echo 'auto' > '/sys/bus/pci/devices/0004:40:00.0/power/control';
+Runtime PM for PCI Device Silicon Motion, Inc. SM2263EN/SM2263XT SSD Controller;echo 'auto' > '/sys/bus/pci/devices/0004:41:00.0/power/control';
+____________________________________________________________________
+ *  *  *   Untunable Software Issues   *  *  *
+
+Description
+I2C Device 0-0042 has no runtime power management
+I2C Device 6-0022 has no runtime power management
+I2C Device 6-0010 has no runtime power management
+I2C Adapter i2c-6 has no runtime power management
+I2C Device 0-0043 has no runtime power management
+I2C Adapter i2c-2 has no runtime power management
+I2C Device 6-0051 has no runtime power management
+I2C Adapter i2c-0 has no runtime power management
+I2C Device 2-0014 has no runtime power management
+I2C Device 2-0042 has no runtime power management
+I2C Adapter i2c-7 has no runtime power management
+I2C Device 7-0014 has no runtime power management
+____________________________________________________________________
+ *  *  *   Optimal Tuned Software Settings   *  *  *
+
+Description
+Autosuspend for USB device xHCI Host Controller [usb5]
+Autosuspend for USB device Generic Platform OHCI controller [usb3]
+Autosuspend for USB device EHCI Host Controller [usb1]
+Autosuspend for USB device xHCI Host Controller [usb8]
+Autosuspend for USB device xHCI Host Controller [usb6]
+Autosuspend for USB device Generic Platform OHCI controller [usb4]
+Autosuspend for USB device EHCI Host Controller [usb2]
+Autosuspend for USB device xHCI Host Controller [usb7]
+Runtime PM for I2C Adapter i2c-10 (ddc)
+Runtime PM for I2C Adapter i2c-9 (fde50000.dp)
+
+____________________________________________________________________
+ *  *  *   Wake status of the devices   *  *  *
+
+Description;Script
+Wake-on-lan status for device eth0;echo 'enabled' > '/sys/class/net/eth0/device/power/wakeup';
+Wake status for USB device usb5;echo 'enabled' > '/sys/bus/usb/devices/usb5/power/wakeup';
+Wake status for USB device usb3;echo 'enabled' > '/sys/bus/usb/devices/usb3/power/wakeup';
+Wake status for USB device usb1;echo 'enabled' > '/sys/bus/usb/devices/usb1/power/wakeup';
+Wake status for USB device usb8;echo 'enabled' > '/sys/bus/usb/devices/usb8/power/wakeup';
+Wake status for USB device usb6;echo 'enabled' > '/sys/bus/usb/devices/usb6/power/wakeup';
+Wake status for USB device usb4;echo 'enabled' > '/sys/bus/usb/devices/usb4/power/wakeup';
+Wake status for USB device usb2;echo 'enabled' > '/sys/bus/usb/devices/usb2/power/wakeup';
+Wake status for USB device 7-1;echo 'enabled' > '/sys/bus/usb/devices/7-1/power/wakeup';
+Wake status for USB device usb7;echo 'enabled' > '/sys/bus/usb/devices/usb7/power/wakeup';
