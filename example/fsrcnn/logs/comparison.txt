@@ -1,0 +1,275 @@
+=============================================================================
+                    PANDUAN FOTO DATA DAYA / POWER METER
+=============================================================================
+TIDAK perlu foto saat:
+  - kompilasi/build executable
+  - mode --build-only/cache build
+  - pembuatan ground truth
+  - hitung PSNR, cek konsistensi, dan generate grafik
+
+PERLU foto hanya saat terminal menampilkan:
+  [FOTO DAYA MULAI]  sampai  [FOTO DAYA SELESAI]
+
+Catatan: jika hanya ingin build/cache program, jalankan:
+  bash comparison.sh --build-only
+=============================================================================
+
+=============================================================================
+                          KOMPILASI EXECUTABLE
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: kompilasi/build executable.
+Using compiler: gcc-15
+Kompilasi selesai.
+
+[FOTO DAYA] Tidak perlu foto: pembuatan ground truth pembanding.
+>> Ground truth sudah ada, pakai cache: /Users/hamdaniilham/HPC-AI-ID/sync-pilot/example/fsrcnn/output_baseline_ground_truth.yuv
+   Ukuran: 22M
+
+=============================================================================
+                         MENJALANKAN BENCHMARK
+=============================================================================
+
+---------------------------------------------------------------------
+Skenario Baseline (fsrcnn_baseline, parallel)
+     Config: executable=fsrcnn_baseline, OMP_NUM_THREADS=8
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: Baseline (fsrcnn_baseline, parallel) | Run 1/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Baseline (fsrcnn_baseline, parallel) | Run 1 selesai (19450 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/3 (Profil): 19450 ms
+
+[FOTO DAYA MULAI] Skenario: Baseline (fsrcnn_baseline, parallel) | Run 2/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Baseline (fsrcnn_baseline, parallel) | Run 2 selesai (21358 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/3 (Normal): 21358 ms
+
+[FOTO DAYA MULAI] Skenario: Baseline (fsrcnn_baseline, parallel) | Run 3/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Baseline (fsrcnn_baseline, parallel) | Run 3 selesai (25056 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/3 (Normal): 25056 ms
+
+     Rata-rata : 21954 ms
+
+---------------------------------------------------------------------
+Skenario A (SyncPilot, 4 workers)
+     Config: executable=fsrcnn_syncpilot, workers=4
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 1/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 1 selesai (5000 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/3 (Profil): 5000 ms
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 2/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 2 selesai (3058 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/3 (Normal): 3058 ms
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 3/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 3 selesai (3633 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/3 (Normal): 3633 ms
+
+     Rata-rata : 3897 ms
+
+---------------------------------------------------------------------
+Skenario B (SyncPilot, 8 workers)
+     Config: executable=fsrcnn_syncpilot, workers=8
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 1/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 1 selesai (2535 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/3 (Profil): 2535 ms
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 2/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 2 selesai (2549 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/3 (Normal): 2549 ms
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 3/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 3 selesai (2668 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/3 (Normal): 2668 ms
+
+     Rata-rata : 2584 ms
+
+---------------------------------------------------------------------
+Skenario C (SyncPilot Hybrid, 4w+2i)
+     Config: executable=fsrcnn_syncpilot_hybrid, workers=4, inner_threads=2
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot Hybrid, 4w+2i) | Run 1/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot Hybrid, 4w+2i) | Run 1 selesai (3606 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/3 (Profil): 3606 ms
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot Hybrid, 4w+2i) | Run 2/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot Hybrid, 4w+2i) | Run 2 selesai (3708 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/3 (Normal): 3708 ms
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot Hybrid, 4w+2i) | Run 3/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot Hybrid, 4w+2i) | Run 3 selesai (3165 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/3 (Normal): 3165 ms
+
+     Rata-rata : 3493 ms
+
+---------------------------------------------------------------------
+Skenario D (SyncPilot Hybrid, 8w+1i)
+     Config: executable=fsrcnn_syncpilot_hybrid, workers=8, inner_threads=1
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot Hybrid, 8w+1i) | Run 1/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot Hybrid, 8w+1i) | Run 1 selesai (2451 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/3 (Profil): 2451 ms
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot Hybrid, 8w+1i) | Run 2/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot Hybrid, 8w+1i) | Run 2 selesai (2520 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/3 (Normal): 2520 ms
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot Hybrid, 8w+1i) | Run 3/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot Hybrid, 8w+1i) | Run 3 selesai (2621 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/3 (Normal): 2621 ms
+
+     Rata-rata : 2530 ms
+
+---------------------------------------------------------------------
+Skenario E (SyncPilot Hybrid, 4w+4i)
+     Config: executable=fsrcnn_syncpilot_hybrid, workers=4, inner_threads=4
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: E (SyncPilot Hybrid, 4w+4i) | Run 1/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: E (SyncPilot Hybrid, 4w+4i) | Run 1 selesai (2720 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/3 (Profil): 2720 ms
+
+[FOTO DAYA MULAI] Skenario: E (SyncPilot Hybrid, 4w+4i) | Run 2/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: E (SyncPilot Hybrid, 4w+4i) | Run 2 selesai (2907 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/3 (Normal): 2907 ms
+
+[FOTO DAYA MULAI] Skenario: E (SyncPilot Hybrid, 4w+4i) | Run 3/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: E (SyncPilot Hybrid, 4w+4i) | Run 3 selesai (2910 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/3 (Normal): 2910 ms
+
+     Rata-rata : 2845 ms
+
+---------------------------------------------------------------------
+Skenario F (Two-pool, 4 big + 4 little)
+     Config: executable=fsrcnn_syncpilot_twopool, workers=8, mode=4 big + 4 little
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: F (Two-pool, 4 big + 4 little) | Run 1/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: F (Two-pool, 4 big + 4 little) | Run 1 selesai (3712 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/3 (Profil): 3712 ms
+
+[FOTO DAYA MULAI] Skenario: F (Two-pool, 4 big + 4 little) | Run 2/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: F (Two-pool, 4 big + 4 little) | Run 2 selesai (2536 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/3 (Normal): 2536 ms
+
+[FOTO DAYA MULAI] Skenario: F (Two-pool, 4 big + 4 little) | Run 3/3
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: F (Two-pool, 4 big + 4 little) | Run 3 selesai (2759 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/3 (Normal): 2759 ms
+
+     Rata-rata : 3002 ms
+
+=============================================================================
+                       MENGHITUNG PSNR
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: menghitung PSNR.
+
+  Menghitung PSNR: Baseline (fsrcnn_baseline, parallel) ... inf dB
+  Menghitung PSNR: A (SyncPilot, 4 workers)       ... inf dB
+  Menghitung PSNR: B (SyncPilot, 8 workers)       ... inf dB
+  Menghitung PSNR: C (SyncPilot Hybrid, 4w+2i)    ... inf dB
+  Menghitung PSNR: D (SyncPilot Hybrid, 8w+1i)    ... inf dB
+  Menghitung PSNR: E (SyncPilot Hybrid, 4w+4i)    ... inf dB
+  Menghitung PSNR: F (Two-pool, 4 big + 4 little) ... inf dB
+
+=============================================================================
+                         RINGKASAN HASIL
+=============================================================================
+
+Skenario                       |   Avg (ms) |   Min (ms) |   Max (ms) | Throughput(fps) |  PSNR (dB)
+-------------------------------+------------+------------+------------+-----------------+-----------
+Baseline (fsrcnn_baseline, parallel) |      21954 |      19450 |      25056 |            6.83 |        inf
+A (SyncPilot, 4 workers)       |       3897 |       3058 |       5000 |           38.49 |        inf
+B (SyncPilot, 8 workers)       |       2584 |       2535 |       2668 |           58.05 |        inf
+C (SyncPilot Hybrid, 4w+2i)    |       3493 |       3165 |       3708 |           42.94 |        inf
+D (SyncPilot Hybrid, 8w+1i)    |       2530 |       2451 |       2621 |           59.29 |        inf
+E (SyncPilot Hybrid, 4w+4i)    |       2845 |       2720 |       2910 |           52.72 |        inf
+F (Two-pool, 4 big + 4 little) |       3002 |       2536 |       3712 |           49.97 |        inf
+
+=============================================================================
+                       ANALISIS SPEEDUP
+=============================================================================
+
+Baseline: Baseline (fsrcnn_baseline, parallel) (21954 ms)
+
+Skenario                       |      Speedup | Keterangan
+-------------------------------+--------------+---------------------
+Baseline (fsrcnn_baseline, parallel) |        1.00x | 1.00x lebih cepat
+A (SyncPilot, 4 workers)       |        5.63x | 5.63x lebih cepat
+B (SyncPilot, 8 workers)       |        8.50x | 8.50x lebih cepat
+C (SyncPilot Hybrid, 4w+2i)    |        6.29x | 6.29x lebih cepat
+D (SyncPilot Hybrid, 8w+1i)    |        8.68x | 8.68x lebih cepat
+E (SyncPilot Hybrid, 4w+4i)    |        7.72x | 7.72x lebih cepat
+F (Two-pool, 4 big + 4 little) |        7.31x | 7.31x lebih cepat
+
+=============================================================================
+                    CEK KONSISTENSI OUTPUT
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: cek konsistensi output.
+
+  Baseline (fsrcnn_baseline, parallel) : IDENTIK ✓
+  A (SyncPilot, 4 workers)       : IDENTIK ✓
+  B (SyncPilot, 8 workers)       : IDENTIK ✓
+  C (SyncPilot Hybrid, 4w+2i)    : IDENTIK ✓
+  D (SyncPilot Hybrid, 8w+1i)    : IDENTIK ✓
+  E (SyncPilot Hybrid, 4w+4i)    : IDENTIK ✓
+  F (Two-pool, 4 big + 4 little) : IDENTIK ✓
+
+=============================================================================
+                  MENULIS DATA & MEMBUAT GRAFIK (GNUPLOT)
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: menulis data dan membuat grafik.
+
+  [✓] File data gnuplot berhasil diperbarui di: /Users/hamdaniilham/HPC-AI-ID/sync-pilot/example/fsrcnn/benchmark_data.dat
+  [!] WARNING: gnuplot tidak ditemukan di sistem Anda.
+      Silakan install gnuplot atau jalankan secara manual menggunakan file plot_results.gp
+
+=============================================================================
+                       BENCHMARK SELESAI
+=============================================================================
+
