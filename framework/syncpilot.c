@@ -20,6 +20,7 @@
 typedef struct {
     PipelineTask **items;
     int head, tail, count, cap;
+    pthread_mutex_t lock;
 } StageQueue;
 
 static int sq_push(StageQueue *sq, PipelineTask *task) {
@@ -36,11 +37,6 @@ static PipelineTask* sq_pop(StageQueue *sq) {
     sq->head = (sq->head + 1) % sq->cap;
     sq->count--;
     return task;
-}
-
-static PipelineTask* sq_peek(StageQueue *sq) {
-    if (sq->count == 0) return NULL;
-    return sq->items[sq->head];
 }
 
 // Reorder Buffer Internal
@@ -63,6 +59,7 @@ struct PipelineEngine {
     int input_done;
     int shutdown;
     int tasks_in_flight;
+    int work_seq;
     int reserved_slots[MAX_STAGES];
 
     FinalReorderBuffer *reorder;
@@ -85,6 +82,11 @@ typedef struct {
     int core_class; // 1 = big core worker, 0 = little core worker, -1 = unknown/homogeneous
 } WorkerContext;
 
+static void signal_work_locked(PipelineEngine *engine) {
+    engine->work_seq++;
+    pthread_cond_broadcast(&engine->cond_work);
+}
+
 static double average_stage_cost_locked(PipelineEngine *engine) {
     int num_stages = engine->config.num_stages;
     double total = 0.0;
@@ -100,59 +102,105 @@ static double average_stage_cost_locked(PipelineEngine *engine) {
     return counted > 0 ? total / counted : 0.0;
 }
 
-static int select_dynamic_stage_locked(PipelineEngine *engine, int core_class, int steal_mode) {
-    int num_stages = engine->config.num_stages;
-    double heavy_threshold = 0.0;
-
+static int stage_matches_worker_preference_locked(PipelineEngine *engine, int stage_id, int core_class, int steal_mode, int urgent_backlog) {
     if (engine->config.enable_two_pool && engine->calibration_done && core_class >= 0) {
-        heavy_threshold = average_stage_cost_locked(engine) * 0.75;
+        double heavy_threshold = average_stage_cost_locked(engine) * 0.75;
+        if (heavy_threshold > 0.0) {
+            double estimated_cost = engine->stage_cost_estimates[stage_id];
+            if (estimated_cost <= 0.0) {
+                estimated_cost = 1.0;
+            }
+            int is_heavy = estimated_cost >= heavy_threshold;
+
+            if (steal_mode == 0) {
+                if (core_class == 1 && !is_heavy) return 0;
+                if (core_class == 0 && is_heavy) return 0;
+            } else if (steal_mode == 1) {
+                if (core_class == 0 && is_heavy && !urgent_backlog) return 0;
+            }
+        }
     }
 
-    int best_stage = -1;
-    double best_score = -1.0;
+    return 1;
+}
+
+static int try_take_task_from_stages(PipelineEngine *engine, int core_class, int steal_mode, PipelineTask **task, int *stage_idx, int *reserved_next_idx) {
+    int num_stages = engine->config.num_stages;
 
     for (int stage_id = num_stages - 1; stage_id >= 0; stage_id--) {
         StageQueue *sq = &engine->stage_qs[stage_id];
-        if (sq->count == 0) continue;
-        if (stage_id + 1 < num_stages) {
-            StageQueue *next_sq = &engine->stage_qs[stage_id + 1];
-            if (next_sq->count + engine->reserved_slots[stage_id + 1] >= next_sq->cap) {
+        if (pthread_mutex_trylock(&sq->lock) != 0) {
+            continue;
+        }
+
+        if (sq->count == 0) {
+            pthread_mutex_unlock(&sq->lock);
+            continue;
+        }
+
+        int urgent_backlog = sq->count > (sq->cap / 2);
+        pthread_mutex_lock(&engine->calib_lock);
+        int preferred = stage_matches_worker_preference_locked(engine, stage_id, core_class, steal_mode, urgent_backlog);
+        pthread_mutex_unlock(&engine->calib_lock);
+        if (!preferred) {
+            pthread_mutex_unlock(&sq->lock);
+            continue;
+        }
+
+        int next_stage = stage_id + 1;
+        int can_take = 1;
+        if (next_stage < num_stages) {
+            StageQueue *next_sq = &engine->stage_qs[next_stage];
+            if (pthread_mutex_trylock(&next_sq->lock) != 0) {
+                pthread_mutex_unlock(&sq->lock);
                 continue;
             }
-        }
 
-        double estimated_cost = engine->stage_cost_estimates[stage_id];
-        if (estimated_cost <= 0.0) {
-            estimated_cost = 1.0;
-        }
-
-        if (heavy_threshold > 0.0) {
-            int is_heavy = estimated_cost >= heavy_threshold;
-            int urgent_backlog = sq->count > (sq->cap / 2);
-
-            if (steal_mode == 0) {
-                if (core_class == 1 && !is_heavy) continue;
-                if (core_class == 0 && is_heavy) continue;
-            } else if (steal_mode == 1) {
-                if (core_class == 0 && is_heavy && !urgent_backlog) continue;
+            pthread_mutex_lock(&engine->lock);
+            can_take = (next_sq->count + engine->reserved_slots[next_stage]) < next_sq->cap;
+            if (can_take) {
+                engine->reserved_slots[next_stage]++;
+                *reserved_next_idx = next_stage;
             }
+            pthread_mutex_unlock(&engine->lock);
+            pthread_mutex_unlock(&next_sq->lock);
         }
 
-        /*
-         * IC-RCE priority: heavy stages with backlog get served first.
-         * A tiny downstream bias keeps completed-near tasks flowing out.
-         */
-        double backlog_factor = 1.0 + ((double)sq->count / (double)sq->cap);
-        double downstream_bias = (double)stage_id / (double)(num_stages * 1000);
-        double score = estimated_cost * backlog_factor + downstream_bias;
-
-        if (score > best_score) {
-            best_score = score;
-            best_stage = stage_id;
+        if (!can_take) {
+            pthread_mutex_unlock(&sq->lock);
+            continue;
         }
+
+        *task = sq_pop(sq);
+        *stage_idx = stage_id;
+        if (*task) {
+            pthread_mutex_lock(&engine->lock);
+            engine->tasks_in_flight++;
+            pthread_cond_signal(&engine->cond_space);
+            pthread_mutex_unlock(&engine->lock);
+        }
+        pthread_mutex_unlock(&sq->lock);
+        return *task != NULL;
     }
 
-    return best_stage;
+    return 0;
+}
+
+static int all_stage_queues_empty(PipelineEngine *engine) {
+    int num_stages = engine->config.num_stages;
+    int semua_kosong = 1;
+
+    for (int i = 0; i < num_stages; i++) {
+        StageQueue *sq = &engine->stage_qs[i];
+        pthread_mutex_lock(&sq->lock);
+        if (sq->count > 0) {
+            semua_kosong = 0;
+        }
+        pthread_mutex_unlock(&sq->lock);
+        if (!semua_kosong) break;
+    }
+
+    return semua_kosong;
 }
 
 
@@ -203,56 +251,43 @@ static void* system_worker_thread(void *arg) {
     int core_class         = ctx->core_class;
 
     while (1) {
-        pthread_mutex_lock(&engine->lock);
-
         PipelineTask *my_task = NULL;
         int current_idx       = -1;
         int reserved_next_idx = -1;
 
-        // Scheduler dinamis: pilih stage berdasarkan estimasi biaya dan backlog.
-        while (!engine->shutdown) {
-            current_idx = select_dynamic_stage_locked(engine, core_class, 0);
-            if (current_idx < 0) {
-                current_idx = select_dynamic_stage_locked(engine, core_class, 1);
-            }
-            if (current_idx >= 0) {
-                my_task = sq_pop(&engine->stage_qs[current_idx]);
-                if (my_task && current_idx + 1 < num_stages) {
-                    reserved_next_idx = current_idx + 1;
-                    engine->reserved_slots[reserved_next_idx]++;
-                }
-            }
-
-            if (my_task) break; // Dapat pekerjaan! Hajar!
-
-            // Evaluasi Shutdown
-            if (engine->input_done && engine->tasks_in_flight == 0) {
-                int semua_kosong = 1;
-                for (int i = 0; i < num_stages; i++) {
-                    if (engine->stage_qs[i].count > 0) {
-                        semua_kosong = 0;
-                        break;
-                    }
-                }
-                if (semua_kosong) {
-                    engine->shutdown = 1;
-                    pthread_cond_broadcast(&engine->cond_work);
-                    break;
-                }
-            }
-
-            // Tidur nunggu disuruh
-            pthread_cond_wait(&engine->cond_work, &engine->lock);
+        // Scheduler non-blocking: worker mencoba kunci tiap stage tanpa antre global.
+        try_take_task_from_stages(engine, core_class, 0, &my_task, &current_idx, &reserved_next_idx);
+        if (!my_task) {
+            try_take_task_from_stages(engine, core_class, 1, &my_task, &current_idx, &reserved_next_idx);
         }
 
-        if (engine->shutdown && !my_task) {
+        if (!my_task) {
+            pthread_mutex_lock(&engine->lock);
+            int can_shutdown = engine->input_done && engine->tasks_in_flight == 0;
             pthread_mutex_unlock(&engine->lock);
-            break; // Tamat riwayat thread
-        }
 
-        engine->tasks_in_flight++;
-        pthread_cond_signal(&engine->cond_space); // Beri tau pusher klo antrean mkn lega
-        pthread_mutex_unlock(&engine->lock);
+            if (can_shutdown && all_stage_queues_empty(engine)) {
+                pthread_mutex_lock(&engine->lock);
+                if (engine->input_done && engine->tasks_in_flight == 0) {
+                    engine->shutdown = 1;
+                    signal_work_locked(engine);
+                }
+                pthread_mutex_unlock(&engine->lock);
+            }
+
+            pthread_mutex_lock(&engine->lock);
+            if (engine->shutdown) {
+                pthread_mutex_unlock(&engine->lock);
+                break;
+            }
+
+            int seen_work_seq = engine->work_seq;
+            while (!engine->shutdown && seen_work_seq == engine->work_seq) {
+                pthread_cond_wait(&engine->cond_work, &engine->lock);
+            }
+            pthread_mutex_unlock(&engine->lock);
+            continue;
+        }
 
         // ====== 1. Pengerjaan Fase (Luar Lock) ======
         StageProcessorFn process_step = engine->config.stages[current_idx];
@@ -290,7 +325,7 @@ static void* system_worker_thread(void *arg) {
                 engine->calibration_done = 1;
                 pthread_cond_broadcast(&engine->calib_cond);
                 pthread_mutex_lock(&engine->lock);
-                pthread_cond_broadcast(&engine->cond_work);
+                signal_work_locked(engine);
                 pthread_mutex_unlock(&engine->lock);
             }
             pthread_mutex_unlock(&engine->calib_lock);
@@ -316,32 +351,40 @@ static void* system_worker_thread(void *arg) {
             // Laporkan tugas in-flight beres
             pthread_mutex_lock(&engine->lock);
             engine->tasks_in_flight--;
-            if (engine->input_done && engine->tasks_in_flight == 0) {
-                int semua_kosong = 1;
-                for (int i = 0; i < num_stages; i++) {
-                    if (engine->stage_qs[i].count > 0) { semua_kosong = 0; break; }
-                }
-                if (semua_kosong) {
+            int can_shutdown = engine->input_done && engine->tasks_in_flight == 0;
+            pthread_mutex_unlock(&engine->lock);
+
+            if (can_shutdown && all_stage_queues_empty(engine)) {
+                pthread_mutex_lock(&engine->lock);
+                if (engine->input_done && engine->tasks_in_flight == 0) {
                     engine->shutdown = 1;
-                    pthread_cond_broadcast(&engine->cond_work);
+                    signal_work_locked(engine);
                 }
+                pthread_mutex_unlock(&engine->lock);
             }
+
+            pthread_mutex_lock(&engine->lock);
             pthread_cond_signal(&engine->cond_space);
             pthread_mutex_unlock(&engine->lock);
 
         } else {
             // Belum selesai (Lanjut ke tahapan antrean berikutnya)
             int next_stage = current_idx + 1;
-            pthread_mutex_lock(&engine->lock);
-            if (!sq_push(&engine->stage_qs[next_stage], my_task)) {
+            StageQueue *next_sq = &engine->stage_qs[next_stage];
+
+            pthread_mutex_lock(&next_sq->lock);
+            if (!sq_push(next_sq, my_task)) {
                 fprintf(stderr, "SyncPilot internal error: reserved stage queue penuh\n");
                 abort();
             }
+            pthread_mutex_unlock(&next_sq->lock);
+
+            pthread_mutex_lock(&engine->lock);
             if (reserved_next_idx == next_stage && engine->reserved_slots[next_stage] > 0) {
                 engine->reserved_slots[next_stage]--;
             }
             engine->tasks_in_flight--; // Krn sudah aman parkir di Q stage slnjutnya
-            pthread_cond_broadcast(&engine->cond_work);
+            signal_work_locked(engine);
             pthread_cond_signal(&engine->cond_space);
             pthread_mutex_unlock(&engine->lock);
         }
@@ -382,6 +425,7 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
         eng->stage_qs[i].count = 0;
         eng->stage_qs[i].head  = 0;
         eng->stage_qs[i].tail  = 0;
+        pthread_mutex_init(&eng->stage_qs[i].lock, NULL);
     }
 
     // Inisialisasi Reorder Buffer Final
@@ -512,12 +556,26 @@ void pipeline_feed(PipelineEngine *engine, int id, void *raw_data) {
      t->current_stage = 0;
      t->data = raw_data;
 
-     pthread_mutex_lock(&engine->lock);
      // Push ke gerbang tol tahapan awal (Stage-0), Push ini blocking via Cond klo antrian penuh. 
-     while(!sq_push(&engine->stage_qs[0], t)) {
+     while(1) {
+         StageQueue *sq = &engine->stage_qs[0];
+         pthread_mutex_lock(&sq->lock);
+         int pushed = sq_push(sq, t);
+         if (!pushed) {
+             pthread_mutex_lock(&engine->lock);
+         }
+         pthread_mutex_unlock(&sq->lock);
+
+         if (pushed) {
+             break;
+         }
+
          pthread_cond_wait(&engine->cond_space, &engine->lock);
+         pthread_mutex_unlock(&engine->lock);
      }
-     pthread_cond_broadcast(&engine->cond_work);
+
+     pthread_mutex_lock(&engine->lock);
+     signal_work_locked(engine);
      pthread_mutex_unlock(&engine->lock);
 }
 
@@ -525,7 +583,7 @@ void pipeline_feed(PipelineEngine *engine, int id, void *raw_data) {
 void pipeline_close_input(PipelineEngine *engine) {
      pthread_mutex_lock(&engine->lock);
      engine->input_done = 1;
-     pthread_cond_broadcast(&engine->cond_work);
+     signal_work_locked(engine);
      pthread_mutex_unlock(&engine->lock);
 }
 
@@ -543,6 +601,7 @@ void pipeline_wait(PipelineEngine *engine) {
 void pipeline_destroy(PipelineEngine *engine) {
     // Demolish Engine Mem Space
     for(int i=0; i < engine->config.num_stages; i++) {
+        pthread_mutex_destroy(&engine->stage_qs[i].lock);
         free(engine->stage_qs[i].items);
     }
     free(engine->stage_qs);
