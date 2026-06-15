@@ -1,8 +1,8 @@
 # Skenario Time_ms Throughput_fps
-"BASE (Baseline, 8t)" 137933516 0.00
-"A (SyncPilot, 4w)" 12256 12.24
-"B (SyncPilot, 8w)" 16325 9.19
-"C (Hybrid, 4w+2i)" 13657 10.98
-"D (Hybrid, 8w+1i)" 16723 8.97
-"E (Hybrid, 4w+4i)" 14695 10.21
-"F (Two-pool, 4b+4l)" 17349 8.65
+"BASE (Baseline, 8t)" 47345 3.17
+"A (SyncPilot, 4w)" 13968 10.74
+"B (SyncPilot, 8w)" 16923 8.86
+"C (Hybrid, 4w+2i)" 15287 9.81
+"D (Hybrid, 8w+1i)" 17545 8.55
+"E (Hybrid, 4w+4i)" 15832 9.47
+"F (Two-pool, 4b+4l)" 17917 8.37
