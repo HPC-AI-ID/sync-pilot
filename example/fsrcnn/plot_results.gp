@@ -31,7 +31,7 @@ plot 'benchmark_data.dat' using 0:3:xtic(1) with boxes lc rgb "#1f77b4", \
 set output 'fsrcnn_time.png'
 set ylabel "Execution Time (ms)" font 'Helvetica-Bold,12'
 set title "FSRCNN Average Execution Time Comparison\n(Lebih rendah lebih baik)" font 'Helvetica-Bold,14'
-set yrange [0:3000]
+unset yrange
 
 # Plotting Execution Time (column 2)
 plot 'benchmark_data.dat' using 0:2:xtic(1) with boxes lc rgb "#d62728", \
