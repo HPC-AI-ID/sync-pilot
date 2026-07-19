@@ -2,7 +2,7 @@
 # Supported: gprof profiling, perf stat, progressive scaling
 
 CC = gcc
-CFLAGS = -O3 -Wall -march=native -fno-inline-functions -mtune=native
+CFLAGS = -O3 -Wall -march=native -fno-inline-functions -mtune=native -pg
 LDFLAGS = -lm -lrt -lpthread
 
 # Directories
