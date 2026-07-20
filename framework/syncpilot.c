@@ -188,19 +188,19 @@ static int try_take_task_from_stages(PipelineEngine *engine, int core_class, int
 
 static int all_stage_queues_empty(PipelineEngine *engine) {
     int num_stages = engine->config.num_stages;
-    int semua_kosong = 1;
+    int all_empty = 1;
 
     for (int i = 0; i < num_stages; i++) {
         StageQueue *sq = &engine->stage_qs[i];
         pthread_mutex_lock(&sq->lock);
         if (sq->count > 0) {
-            semua_kosong = 0;
+            all_empty = 0;
         }
         pthread_mutex_unlock(&sq->lock);
-        if (!semua_kosong) break;
+        if (!all_empty) break;
     }
 
-    return semua_kosong;
+    return all_empty;
 }
 
 

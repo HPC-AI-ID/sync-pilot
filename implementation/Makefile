@@ -54,14 +54,16 @@ run_profiling: $(TARGETS)
 	@echo "=========================================="
 	@echo "Running Full Profiling Suite..."
 	@echo "=========================================="
+	@mkdir -p $(OUTPUT_DIR) $(GPROF_DIR) $(PERF_DIR)
 	@for workers in 1 2 4 8; do \
 		echo "Running thread$$workers..." ; \
-		perf record -F 99 --output $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
+		perf record -F 99 --no-buildid-mmap \
+			--output $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
 			$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \
 			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers 2>&1 | \
 			grep -v "CPU\|Power\|Hot Plug" ; \
-		perf report --input $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
-			--output $(GPROF_DIR)/gprof_thread$$workers.txt ; \
+		perf report --no-buildid-mmap --input $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
+			--stdio > $(GPROF_DIR)/gprof_thread$$workers.txt ; \
 		perf stat -e cycles,instructions,cache-references,cache-misses \
 			$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \
 			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers > $(PERF_DIR)/perf_thread$$workers.txt ; \
