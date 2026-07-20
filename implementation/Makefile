@@ -25,8 +25,8 @@ SOURCES = $(SRC_DIR)/fsrcnn_syncpilot.c $(FRAMEWORK_DIR)/syncpilot.c
 TARGETS = $(RESULTS_DIR)/fsrcnn_thread1 $(RESULTS_DIR)/fsrcnn_thread2 \
           $(RESULTS_DIR)/fsrcnn_thread4 $(RESULTS_DIR)/fsrcnn_thread8
 
-# Default target
-all: $(TARGETS) run_profiling
+# Default target: only build binaries
+all: $(TARGETS)
 
 # Compile all configurations
 $(RESULTS_DIR)/fsrcnn_thread1: $(SOURCES)
