@@ -11,6 +11,9 @@ SRC_DIR = $(PROJECT_DIR)/example/fsrcnn
 FRAMEWORK_DIR = $(PROJECT_DIR)/framework
 IMPLEMENTATION_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
+# Input YUV file (QCIF 176x144)
+INPUT_YUV = $(SRC_DIR)/suzie_qcif.yuv
+
 # Output directories (relative to project root)
 PYTHON_TEMPLATES = ./scripts/templates
 RESULTS_DIR = $(PROJECT_DIR)/results
@@ -65,7 +68,7 @@ run_profiling: $(TARGETS)
 		echo "Running thread$$workers..." ; \
 		perf record -F 99 \
 			--output $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
-			$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \
+			$(RESULTS_DIR)/fsrcnn_thread$$workers $(INPUT_YUV) \
 			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers 2>&1 | \
 			grep -v "CPU\|Power\|Hot Plug" || echo "perf record failed, continuing..." ; \
 		if [ -f $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data ]; then \
@@ -75,7 +78,7 @@ run_profiling: $(TARGETS)
 			echo "Skipping perf report (no perf_data)"; \
 		fi; \
 		perf stat -e cycles,instructions,cache-references,cache-misses \
-			$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \
+			$(RESULTS_DIR)/fsrcnn_thread$$workers $(INPUT_YUV) \
 			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers > $(PERF_DIR)/perf_thread$$workers.txt || echo "perf stat failed" ; \
 	done
 
@@ -98,13 +101,16 @@ clean:
 	@echo "Clean complete"
 
 # Quick scale test (without deep profiling)
+# Uses - as a prefix to ignore errors and continue the loop
 quick_test: $(TARGETS)
 	@echo "Running quick scale test (no profiling)..."
 	@mkdir -p $(OUTPUT_DIR)
 	@for workers in 1 2 4 8; do \
 		echo "--- Workers: $$workers ---" ; \
-		$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \
-			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers || echo "FAILED: thread$$workers" ; \
+		$(RESULTS_DIR)/fsrcnn_thread$$workers $(INPUT_YUV) \
+			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers \
+			&& echo "OK: thread$$workers" \
+			|| echo "FAILED: thread$$workers (continuing...)" ; \
 	done
 
 # Install dependencies
