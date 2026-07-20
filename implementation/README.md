@@ -38,9 +38,28 @@ sudo apt-get install -y gprof git gcc libpthread-stubs0-dev
 brew install gcc pcp
 ```
 
-### 2. Run Full Profiling Suite
+### 2. Build Binaries
 ```bash
-# Method A: Use Makefile (recommended)
+cd sync-pilot/implementation
+make all
+```
+
+This will compile SyncPilot binaries for thread configurations: 1, 2, 4, 8 into `RESULTS/`.
+
+### 3. Run Without Profiling (Restricted Nodes)
+On HPC nodes where `perf` is blocked by `perf_event_paranoid` and you don't have sudo:
+```bash
+make quick_test
+```
+
+Or run binaries directly:
+```bash
+./results/fsrcnn_thread4 ../example/fsrcnn/suzie_176x144.yuv results/outputs/out_thread4.yuv 4
+```
+
+### 4. Run Full Profiling Suite
+```bash
+# Method A: Use Makefile (requires perf access)
 cd sync-pilot/implementation
 make profiling
 
@@ -59,7 +78,6 @@ bash run_scaling_studies.sh
 ```
 
 This will:
-- Compile SyncPilot binary for thread configurations: 1, 2, 4, 8
 - Run each configuration with `perf record` (CPU profiling) and `perf stat` (hardware counters)
 - Generate perf reports for each configuration
 - Save all outputs to `RESULTS/` directory
