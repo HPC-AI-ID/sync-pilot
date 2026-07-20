@@ -79,6 +79,9 @@ run_profiling: $(TARGETS)
 			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers > $(PERF_DIR)/perf_thread$$workers.txt || echo "perf stat failed" ; \
 	done
 
+# Alias for run_profiling
+profiling: run_profiling
+
 # Run Analysis
 analyze:
 	@echo "Running scaling analysis..."
