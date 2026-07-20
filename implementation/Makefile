@@ -67,12 +67,16 @@ run_profiling: $(TARGETS)
 			--output $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
 			$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \
 			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers 2>&1 | \
-			grep -v "CPU\|Power\|Hot Plug" ; \
-		perf report -i $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
-			--stdio > $(GPROF_DIR)/gprof_thread$$workers.txt ; \
+			grep -v "CPU\|Power\|Hot Plug" || echo "perf record failed, continuing..." ; \
+		if [ -f $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data ]; then \
+			perf report -i $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
+				--stdio > $(GPROF_DIR)/gprof_thread$$workers.txt || echo "perf report failed" ; \
+		else \
+			echo "Skipping perf report (no perf_data)"; \
+		fi; \
 		perf stat -e cycles,instructions,cache-references,cache-misses \
 			$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \
-			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers > $(PERF_DIR)/perf_thread$$workers.txt ; \
+			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers > $(PERF_DIR)/perf_thread$$workers.txt || echo "perf stat failed" ; \
 	done
 
 # Run Analysis

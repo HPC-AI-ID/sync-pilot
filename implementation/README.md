@@ -88,7 +88,13 @@ cd sync-pilot/implementation
 bash generate_full_analysis_report.sh RESULTS
 ```
 
-### 4. View Results
+### 5. Generate Analysis Report
+```bash
+cd sync-pilot/implementation
+bash generate_full_analysis_report.sh RESULTS
+```
+
+### 6. View Results
 ```bash
 # Tree structure
 tree RESULTS/
