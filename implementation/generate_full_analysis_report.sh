@@ -73,30 +73,30 @@ for workers in 1 2 4 8; do
     fi
 
     # Generate analysis text
-    cat >> "${ANALYSIS_FILE}" << TEAL
+cat >> "${ANALYSIS_FILE}" << TEAL
 
 THREAD ${workers} SUMMARY
-------------------------
-Binary:           ${RESULTS_DIR}/fsrcnn_thread${workers}
-CPU Threads:      ${workers}
-Wall Clock Time:  ${WALL_TIME}s
-CPU User Time:    ${CPU_TIME}s
+-----------------------
+Binary: ${RESULTS_DIR}/fsrcnn_thread${workers}
+CPU Threads: ${workers}
+Wall Clock Time: ${WALL_TIME}s
+CPU User Time: ${CPU_TIME}s
 ---
 
 PERFORMANCE METRICS
 -------------------
-Total Instructions:   ${IPC}
-Total Cycles:         ${CYCLES}
+Total Instructions: ${IPC}
+Total Cycles: ${CYCLES}
 IPC (Instructions/Cycle): ${CALC_IPC}
 
 Cache Performance:
-  Total Cache References:   ${CACHE_HIT}
-  Total Cache Misses:       ${CACHE_MISS}
-  Hit Rate (%):             ${CALC_CACHE_HIT_RATIO}
+Total Cache References: ${CACHE_HIT}
+Total Cache Misses: ${CACHE_MISS}
+Hit Rate (%): ${CALC_CACHE_HIT_RATIO}
 
 KEY INSIGHTS (based on exposure)
--------------------------------
-EOF
+--------------------------------
+TEAL
 
     # Layer bottleneck analysis from gprof
     if [ -f "${GPROF_FILE}" ]; then
