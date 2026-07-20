@@ -108,8 +108,8 @@ quick_test: $(TARGETS)
 	@for workers in 1 2 4 8; do \
 		echo "--- Workers: $$workers ---" ; \
 		cd $(SRC_DIR) && \
-		../$(RESULTS_DIR)/fsrcnn_thread$$workers $(INPUT_YUV) \
-			../$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers \
+		$(RESULTS_DIR)/fsrcnn_thread$$workers $(INPUT_YUV) \
+			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers \
 			&& echo "OK: thread$$workers" \
 			|| echo "FAILED: thread$$workers (continuing...)" ; \
 	done
