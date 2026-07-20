@@ -120,22 +120,22 @@ done
 
 cat >> "${ANALYSIS_FILE}" << FOOTER
 
-================================================================================
+===============================================================================
 SCALING COMPARISON SUMMARY
-================================================================================
+===============================================================================
 
 Configurations Tested:
-  1x Serial Baseline    → 1 worker
-  2x Mixed             → 1 Big + 1 LITTLE (estimate)
-  4x Big-Only          → 4 workers, all Big cores (recommended)
-  8x Hybrid            → 4 Big + 4 LITTLE (optimal? analyze below)
+1x Serial Baseline    -> 1 worker
+2x Mixed             -> 1 Big + 1 LITTLE (estimate)
+4x Big-Only          -> 4 workers, all Big cores (recommended)
+8x Hybrid            -> 4 Big + 4 LITTLE (optimal? analyze below)
 
 Note: Full thread distribution analysis requires additional benchmark data.
-      The 4 Big-Only configuration shows promise for compute-bound workloads.
+The 4 Big-Only configuration shows promise for compute-bound workloads.
 
-================================================================================
+===============================================================================
 NEXT STEPS
-================================================================================
+===============================================================================
 
 1. Execute: ./run_scaling_studies.sh
 2. Generate this report: ./generate_full_analysis_report.sh
@@ -147,4 +147,40 @@ NEXT STEPS
 ===============================================================================
 FOOTER
 
-echo "Report generated: ${ANALYSIS_FILE}"=
+# Generate individual analysis files per thread
+for workers in 1 2 4 8; do
+    THREAD_FILE="${ANALYSIS_DIR}/analysis_thread${workers}.txt"
+    cat > "${THREAD_FILE}" << 'INNER_HEADER'
+===============================================================================
+FSRCNN THREAD ANALYSIS
+===============================================================================
+INNER_HEADER
+
+    echo "Workers: ${workers}" >> "${THREAD_FILE}"
+    echo "Binary: ${RESULTS_DIR}/fsrcnn_thread${workers}" >> "${THREAD_FILE}"
+    echo "" >> "${THREAD_FILE}"
+
+    if [ -f "${PERF_DIR}/perf_thread${workers}.txt" ]; then
+        echo "--- PERF STAT ---" >> "${THREAD_FILE}"
+        grep -E 'cycles|instructions|cache-references|cache-misses' "${PERF_DIR}/perf_thread${workers}.txt" >> "${THREAD_FILE}" 2>/dev/null || true
+    else
+        echo "--- PERF STAT ---" >> "${THREAD_FILE}"
+        echo "perf_thread${workers}.txt not found (perf_event_paranoid restriction or profiling not run)" >> "${THREAD_FILE}"
+    fi
+
+    echo "" >> "${THREAD_FILE}"
+
+    if [ -f "${GPROF_DIR}/gprof_thread${workers}.txt" ]; then
+        echo "--- GPROF ---" >> "${THREAD_FILE}"
+        head -n 40 "${GPROF_DIR}/gprof_thread${workers}.txt" >> "${THREAD_FILE}" 2>/dev/null || true
+    else
+        echo "--- GPROF ---" >> "${THREAD_FILE}"
+        echo "gprof_thread${workers}.txt not found" >> "${THREAD_FILE}"
+    fi
+
+    echo "" >> "${THREAD_FILE}"
+    echo "===============================================================================" >> "${THREAD_FILE}"
+    echo "Generated: $(date)" >> "${THREAD_FILE}"
+done
+
+echo "Report generated: ${ANALYSIS_FILE}"
