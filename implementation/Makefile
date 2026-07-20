@@ -50,6 +50,12 @@ $(RESULTS_DIR)/fsrcnn_thread8: $(SOURCES)
 	$(CC) $(CFLAGS) -o $@ $(SOURCES) $(LDFLAGS)
 
 # Run Full Profiling Suite
+# Note: perf requires CAP_PERFMON or perf_event_paranoid <= 0.
+#   To allow without sudo (requires root once):
+#     echo "kernel.perf_event_paranoid = -1" | sudo tee -a /etc/sysctl.conf
+#     sudo sysctl -p
+#   Or run this target with sudo:
+#     sudo make run_profiling
 run_profiling: $(TARGETS)
 	@echo "=========================================="
 	@echo "Running Full Profiling Suite..."
@@ -57,12 +63,12 @@ run_profiling: $(TARGETS)
 	@mkdir -p $(OUTPUT_DIR) $(GPROF_DIR) $(PERF_DIR)
 	@for workers in 1 2 4 8; do \
 		echo "Running thread$$workers..." ; \
-		perf record -F 99 --no-buildid-mmap \
+		perf record -F 99 \
 			--output $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
 			$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \
 			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers 2>&1 | \
 			grep -v "CPU\|Power\|Hot Plug" ; \
-		perf report --no-buildid-mmap --input $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
+		perf report -i $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
 			--stdio > $(GPROF_DIR)/gprof_thread$$workers.txt ; \
 		perf stat -e cycles,instructions,cache-references,cache-misses \
 			$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \

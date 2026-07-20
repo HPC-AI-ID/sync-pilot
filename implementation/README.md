@@ -47,12 +47,21 @@ make profiling
 # Method B: Execute main script
 cd sync-pilot/implementation
 bash run_scaling_studies.sh
+
+# If perf_event_paranoid blocks profiling, use sudo:
+#   Option 1: Allow perf without password temporarily
+#     echo 0 | sudo tee /proc/sys/kernel/perf_event_paranoid
+#   Option 2: Re-run make with sudo for perf only
+#     make profiling PERF_CMD="sudo perf"
+#   Option 3: Permanently allow (requires root):
+#     echo "kernel.perf_event_paranoid = -1" | sudo tee -a /etc/sysctl.conf
+#     sudo sysctl -p
 ```
 
 This will:
 - Compile SyncPilot binary for thread configurations: 1, 2, 4, 8
-- Run each configuration with `perf` recording (CPU cycles, instructions, cache metrics)
-- Generate Gprof reports for each configuration
+- Run each configuration with `perf record` (CPU profiling) and `perf stat` (hardware counters)
+- Generate perf reports for each configuration
 - Save all outputs to `RESULTS/` directory
 
 ### 3. Generate Analysis Report
@@ -85,7 +94,9 @@ cat RESULTS/analysis/summary_analysis.txt
 ### Makefile Commands
 ```bash
 make all        # Build all configurations (default)
-make profiling  # Run full gprof + perf profiling
+make profiling  # Run full perf profiling
+                 #   If perf_event_paranoid blocks access:
+                 #   make profiling PERF_CMD="sudo perf"
 make analyze    # Run scaling analysis
 make report     # Generate comprehensive report
 make quick_test # Fast test (no profiling)
@@ -105,7 +116,7 @@ bash run_scaling_studies.sh
 
 **Executes**:
 - Compiles 4 binaries: thread1, thread2, thread4, thread8
-- Runs each with `perf record` (CPU profiling) and `perf report` (gprof)
+- Runs each with `perf record` (CPU profiling) and `perf stat` (hardware counters)
 - Records cache references, instruction counts, and cycles
 - Captures system statistics (CPU utilization, memory)
 
@@ -315,12 +326,23 @@ make clean
 make all
 ```
 
-### Issue: Gprof reports empty
-- Ensure `perf record` was executed before `perf report`
-- Check if binary was linked with profiling support:
+### Issue: `perf` access denied / `perf_event_paranoid` error
 ```bash
-file results/fsrcnn_thread4
+# Check current setting
+cat /proc/sys/kernel/perf_event_paranoid
+
+# Option A: Allow perf for current session (requires sudo once)
+echo 0 | sudo tee /proc/sys/kernel/perf_event_paranoid
+
+# Option B: Allow perf permanently (requires root)
+echo "kernel.perf_event_paranoid = -1" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+# Option C: Run profiling via sudo
+sudo make run_profiling
 ```
+
+On shared clusters/HPC nodes (e.g. node6), you may not have sudo. In that case, use `quick_test` instead of `run_profiling`.
 
 ### Issue: No output files
 ```bash
