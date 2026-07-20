@@ -140,11 +140,11 @@ NEXT STEPS
 1. Execute: ./run_scaling_studies.sh
 2. Generate this report: ./generate_full_analysis_report.sh
 3. Analyze layer-level cost data from framework (syncpilot logs)
-4. Compare IPC values Thread 4 vs Hybrid to validate integration from ...
-5. Add input resolution scaling test (176x144 vs 352x288) to confirm compute-bound
-   nature (if time increases with resolution, it's compute-bound; if GPU
-   utilization stays constant, it's memory-bound; stage distribution may
-   reveal bottleneck clusters in embedded单元/窑温度).
-   (We call this "dijk strictly内核空间" to differentiate compute-bound.
+4. Compare IPC values Thread 4 vs Hybrid to validate integration
+5. Add input resolution scaling test (176x144 vs 352x288) to confirm
+   compute-bound nature (if time increases with resolution, it's compute-bound)
 
-================================================================================
+===============================================================================
+FOOTER
+
+echo "Report generated: ${ANALYSIS_FILE}"=
