@@ -100,10 +100,11 @@ clean:
 # Quick scale test (without deep profiling)
 quick_test: $(TARGETS)
 	@echo "Running quick scale test (no profiling)..."
+	@mkdir -p $(OUTPUT_DIR)
 	@for workers in 1 2 4 8; do \
+		echo "--- Workers: $$workers ---" ; \
 		$(RESULTS_DIR)/fsrcnn_thread$$workers $(SRC_DIR)/suzie_176x144.yuv \
-			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers 2>&1 | \
-			grep "Frame.*selesai diproses" ; \
+			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers || echo "FAILED: thread$$workers" ; \
 	done
 
 # Install dependencies
