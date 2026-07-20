@@ -6,7 +6,7 @@ CFLAGS = -O3 -Wall -march=native -fno-inline-functions -mtune=native -pg
 LDFLAGS = -lm -lrt -lpthread
 
 # Directories
-PROJECT_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))..
+PROJECT_DIR = $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
 SRC_DIR = $(PROJECT_DIR)/example/fsrcnn
 FRAMEWORK_DIR = $(PROJECT_DIR)/framework
 IMPLEMENTATION_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
