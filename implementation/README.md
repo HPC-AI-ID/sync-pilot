@@ -54,7 +54,7 @@ make quick_test
 
 Or run binaries directly:
 ```bash
-./results/fsrcnn_thread4 ../example/fsrcnn/suzie_176x144.yuv results/outputs/out_thread4.yuv 4
+./results/fsrcnn_thread4 ../example/fsrcnn/suzie_qcif.yuv results/outputs/out_thread4.yuv 4
 ```
 
 ### 4. Run Full Profiling Suite
