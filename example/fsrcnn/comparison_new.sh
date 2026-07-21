@@ -45,6 +45,8 @@ SCENARIOS=(
     "SER"
     "A"
     "B"
+    "C"
+    "D"
 )
 
 LABELS=(
