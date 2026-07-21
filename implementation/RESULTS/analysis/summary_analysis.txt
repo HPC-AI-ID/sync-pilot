@@ -1,0 +1,122 @@
+================================================================================
+FSRCNN SCALING ANALYSIS REPORT
+================================================================================
+Generated: $(date)
+Platform: Orange Pi 5 (RK3588S)
+Study: Thread scaling 1 to 8 workers on AMP (big.LITTLE)
+================================================================================
+
+
+THREAD 1 SUMMARY
+-----------------------
+Binary: RESULTS/fsrcnn_thread1
+CPU Threads: 1
+Wall Clock Time: 1e-09s
+CPU User Time: s
+---
+
+PERFORMANCE METRICS
+-------------------
+Total Instructions: 
+Total Cycles: 
+IPC (Instructions/Cycle): N/A
+
+Cache Performance:
+Total Cache References: 
+Total Cache Misses: 
+Hit Rate (%): N/A
+
+KEY INSIGHTS (based on exposure)
+--------------------------------
+
+THREAD 2 SUMMARY
+-----------------------
+Binary: RESULTS/fsrcnn_thread2
+CPU Threads: 2
+Wall Clock Time: 1e-09s
+CPU User Time: s
+---
+
+PERFORMANCE METRICS
+-------------------
+Total Instructions: 
+Total Cycles: 
+IPC (Instructions/Cycle): N/A
+
+Cache Performance:
+Total Cache References: 
+Total Cache Misses: 
+Hit Rate (%): N/A
+
+KEY INSIGHTS (based on exposure)
+--------------------------------
+
+THREAD 4 SUMMARY
+-----------------------
+Binary: RESULTS/fsrcnn_thread4
+CPU Threads: 4
+Wall Clock Time: 1e-09s
+CPU User Time: s
+---
+
+PERFORMANCE METRICS
+-------------------
+Total Instructions: 
+Total Cycles: 
+IPC (Instructions/Cycle): N/A
+
+Cache Performance:
+Total Cache References: 
+Total Cache Misses: 
+Hit Rate (%): N/A
+
+KEY INSIGHTS (based on exposure)
+--------------------------------
+
+THREAD 8 SUMMARY
+-----------------------
+Binary: RESULTS/fsrcnn_thread8
+CPU Threads: 8
+Wall Clock Time: 1e-09s
+CPU User Time: s
+---
+
+PERFORMANCE METRICS
+-------------------
+Total Instructions: 
+Total Cycles: 
+IPC (Instructions/Cycle): N/A
+
+Cache Performance:
+Total Cache References: 
+Total Cache Misses: 
+Hit Rate (%): N/A
+
+KEY INSIGHTS (based on exposure)
+--------------------------------
+
+===============================================================================
+SCALING COMPARISON SUMMARY
+===============================================================================
+
+Configurations Tested:
+1x Serial Baseline    -> 1 worker
+2x Mixed             -> 1 Big + 1 LITTLE (estimate)
+4x Big-Only          -> 4 workers, all Big cores (recommended)
+8x Hybrid            -> 4 Big + 4 LITTLE (optimal? analyze below)
+
+Note: Full thread distribution analysis requires additional benchmark data.
+The 4 Big-Only configuration shows promise for compute-bound workloads.
+
+===============================================================================
+NEXT STEPS
+===============================================================================
+
+1. Execute: ./run_scaling_studies.sh
+2. Generate this report: ./generate_full_analysis_report.sh
+3. Analyze layer-level cost data from framework (syncpilot logs)
+4. Compare IPC values Thread 4 vs Hybrid to validate integration
+5. Add input resolution scaling test (176x144 vs 352x288) to confirm
+   compute-bound nature (if time increases with resolution, it's compute-bound)
+
+===============================================================================

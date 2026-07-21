@@ -1,0 +1,14 @@
+===============================================================================
+FSRCNN THREAD ANALYSIS
+===============================================================================
+Workers: 1
+Binary: RESULTS/fsrcnn_thread1
+
+--- PERF STAT ---
+perf_thread1.txt not found (perf_event_paranoid restriction or profiling not run)
+
+--- GPROF ---
+gprof_thread1.txt not found
+
+===============================================================================
+Generated: Mon Jul 20 14:21:19 WITA 2026
