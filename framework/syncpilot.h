@@ -25,7 +25,7 @@ extern "C" {
 #define MAX_STAGES 16
 
 /** Maksimum core CPU yang bisa didaftarkan untuk affinity */
-#define MAX_CORES  16
+#define MAX_CORES  20
 
 /**
  * Tipe data Item/Tugas Generik yang mengalir dari tahap 1 ke tahap akhir.
