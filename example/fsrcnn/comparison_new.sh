@@ -52,11 +52,13 @@ LABELS=(
     "Serial (fsrcnn_serial, big core pinned)"
     "A (SyncPilot, 4 workers)"
     "B (SyncPilot, 8 workers)"
+    "C (SyncPilot, 10 workers)"
+    "D (SyncPilot, 20 workers)"
 )
 
-SCENARIO_RUNNERS=(baseline serial syncpilot syncpilot)
+SCENARIO_RUNNERS=(baseline serial syncpilot syncpilot syncpilot syncpilot)
 
-SCENARIO_WORKERS=(8 150 4 8)
+SCENARIO_WORKERS=(8 150 4 8 10 20)
 
 SCENARIO_INNER_THREADS=(1 1 1 1)
 
