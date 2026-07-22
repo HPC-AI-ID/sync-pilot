@@ -543,6 +543,14 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
 
             pthread_setaffinity_np(eng->workers[i], sizeof(cpu_set_t), &cpuset);
         }
+
+        if (num_big > 0) {
+            cpu_set_t cpuset_consumer;
+            CPU_ZERO(&cpuset_consumer);
+            // Kunci Consumer secara eksklusif ke Big Core pertama (indeks 0)
+            CPU_SET(auto_big_cores[0], &cpuset_consumer); 
+            pthread_setaffinity_np(eng->t_consumer, sizeof(cpu_set_t), &cpuset_consumer);
+        }
     }
 #endif
 
