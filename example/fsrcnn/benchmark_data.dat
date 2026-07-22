@@ -1,7 +1,6 @@
 # Skenario Time_ms Throughput_fps
-"BASE (Baseline, 8t)" 7910 18.96
-"SER (Serial, big core)" 10148 14.78
-"A (SyncPilot, 4w)" 3035 49.42
+"SER (Serial, big core)" 10445 14.36
+"A (SyncPilot, 4w)" 3016 49.73
 "B (SyncPilot, 8w)" 1581 94.88
-"C (SyncPilot, 10w)" 1342 111.77
-"D (SyncPilot, 20w)" 1124 133.45
+"C (SyncPilot, 10w)" 1334 112.44
+"D (SyncPilot, 20w)" 1112 134.89
