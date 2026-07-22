@@ -16,7 +16,7 @@ set grid xtics lc rgb "#dddddd" lw 1
 set ylabel "Throughput (FPS)" font 'Helvetica-Bold,12'
 set xlabel "Skenario Percobaan" font 'Helvetica-Bold,12'
 set title "FSRCNN Throughput Comparison (FPS)\n(Lebih tinggi lebih baik)" font 'Helvetica-Bold,14'
-set yrange [0:80]
+set yrange [0:*]
 set xtics font 'Helvetica,10'
 set ytics font 'Helvetica,10'
 

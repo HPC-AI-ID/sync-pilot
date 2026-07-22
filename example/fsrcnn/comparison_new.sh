@@ -41,7 +41,7 @@ EXPECTED_OUTPUT_SIZE=$((OUT_WIDTH * OUT_HEIGHT * 3 / 2 * TOTAL_FRAMES))
 
 # Skenario Percobaan
 SCENARIOS=(
-    "BASE"
+    # "BASE"
     "SER"
     "A"
     "B"
@@ -50,7 +50,7 @@ SCENARIOS=(
 )
 
 LABELS=(
-    "Baseline (fsrcnn_baseline, parallel)"
+    # "Baseline (fsrcnn_baseline, parallel)"
     "Serial (fsrcnn_serial, big core pinned)"
     "A (SyncPilot, 4 workers)"
     "B (SyncPilot, 8 workers)"
@@ -58,11 +58,12 @@ LABELS=(
     "D (SyncPilot, 20 workers)"
 )
 
-SCENARIO_RUNNERS=(baseline serial syncpilot syncpilot syncpilot syncpilot)
+# SCENARIO_RUNNERS=(baseline serial syncpilot syncpilot syncpilot syncpilot)
+SCENARIO_RUNNERS=(serial syncpilot syncpilot syncpilot syncpilot)
 
-SCENARIO_WORKERS=(8 150 4 8 10 20)
+SCENARIO_WORKERS=(150 4 8 10 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
