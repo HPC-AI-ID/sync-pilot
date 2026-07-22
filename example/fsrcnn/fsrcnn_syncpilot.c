@@ -327,7 +327,7 @@ int main(int argc, char *argv[]) {
     cfg.num_workers              = num_workers;   // pekerja paralel 
     cfg.num_stages               = 8;   // 8 layer FSRCNN
     cfg.total_tasks              = numFrames;
-    cfg.queue_capacity_per_stage = 16;  // Sama seperti LAYER_Q_CAP = 16
+    cfg.queue_capacity_per_stage = 64;  // Sama seperti LAYER_Q_CAP = 16
 
     cfg.stages[0] = cb_layer1;
     cfg.stages[1] = cb_layer2;
