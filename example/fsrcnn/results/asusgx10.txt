@@ -1,0 +1,61 @@
+=============================================================================
+                       MENGHITUNG PSNR
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: menghitung PSNR.
+
+  Menghitung PSNR: Serial (fsrcnn_serial, big core pinned) ... inf dB
+  Menghitung PSNR: A (SyncPilot, 4 workers)       ... inf dB
+  Menghitung PSNR: B (SyncPilot, 8 workers)       ... inf dB
+  Menghitung PSNR: C (SyncPilot, 10 workers)      ... inf dB
+  Menghitung PSNR: D (SyncPilot, 20 workers)      ... inf dB
+
+=============================================================================
+                         RINGKASAN HASIL
+=============================================================================
+
+Skenario                       |   Avg (ms) |   Min (ms) |   Max (ms) | Throughput(fps) |  PSNR (dB)
+-------------------------------+------------+------------+------------+-----------------+-----------
+Serial (fsrcnn_serial, big core pinned) |      10445 |      10378 |      10483 |           14.36 |        inf
+A (SyncPilot, 4 workers)       |       3016 |       2995 |       3049 |           49.73 |        inf
+B (SyncPilot, 8 workers)       |       1581 |       1569 |       1592 |           94.88 |        inf
+C (SyncPilot, 10 workers)      |       1334 |       1317 |       1348 |          112.44 |        inf
+D (SyncPilot, 20 workers)      |       1112 |       1101 |       1139 |          134.89 |        inf
+
+=============================================================================
+                       ANALISIS SPEEDUP (Ts/Tp)
+=============================================================================
+
+Serial (Ts): Serial (fsrcnn_serial, big core pinned) (10445 ms)
+
+Skenario                       |      Speedup | Keterangan
+-------------------------------+--------------+---------------------
+Serial (fsrcnn_serial, big core pinned) |        1.00x | 1.00x lebih cepat dari Serial
+A (SyncPilot, 4 workers)       |        3.46x | 3.46x lebih cepat dari Serial
+B (SyncPilot, 8 workers)       |        6.61x | 6.61x lebih cepat dari Serial
+C (SyncPilot, 10 workers)      |        7.83x | 7.83x lebih cepat dari Serial
+D (SyncPilot, 20 workers)      |        9.39x | 9.39x lebih cepat dari Serial
+
+=============================================================================
+                    CEK KONSISTENSI OUTPUT
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: cek konsistensi output.
+
+  Serial (fsrcnn_serial, big core pinned) : IDENTIK ✓
+  A (SyncPilot, 4 workers)       : IDENTIK ✓
+  B (SyncPilot, 8 workers)       : IDENTIK ✓
+  C (SyncPilot, 10 workers)      : IDENTIK ✓
+  D (SyncPilot, 20 workers)      : IDENTIK ✓
+
+=============================================================================
+                  MENULIS DATA & MEMBUAT GRAFIK (GNUPLOT)
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: menulis data dan membuat grafik.
+
+  [✓] File data gnuplot berhasil diperbarui di: /home/lab_iot/FSRCNN/sync-pilot/example/fsrcnn/benchmark_data.dat
+  [✓] Grafik throughput (fsrcnn_throughput.png) dan waktu (fsrcnn_time.png) berhasil digenerate!
+
+=============================================================================
+                       BENCHMARK SELESAI
+=============================================================================
+
+lab_iot@node6:~/FSRCNN/sync-pilot/example/fsrcnn$ 
