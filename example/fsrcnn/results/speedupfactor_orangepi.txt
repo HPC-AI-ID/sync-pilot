@@ -1,0 +1,404 @@
+
+[FOTO DAYA] Tidak perlu foto: pembuatan ground truth pembanding.
+>> Ground truth sudah ada, pakai cache: /home/orangepi/FSRCNN/sync-pilot/example/fsrcnn/output_baseline_ground_truth.yuv
+   Ukuran: 22M
+
+=============================================================================
+                         MENJALANKAN BENCHMARK
+=============================================================================
+
+---------------------------------------------------------------------
+Skenario Serial (fsrcnn_serial, big core pinned)
+     Config: executable=fsrcnn_serial, big core pinned, 150 frames
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 1/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 1 selesai (42844 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/8 (Profil): 42844 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 2/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 2 selesai (44355 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/8 (Normal): 44355 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 3/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 3 selesai (45222 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/8 (Normal): 45222 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 4/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 4 selesai (46324 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 4/8 (Normal): 46324 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 5/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 5 selesai (45987 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 5/8 (Normal): 45987 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 6/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 6 selesai (46101 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 6/8 (Normal): 46101 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 7/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 7 selesai (47468 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 7/8 (Normal): 47468 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 8/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial, big core pinned) | Run 8 selesai (46809 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 8/8 (Normal): 46809 ms
+
+     Rata-rata : 45638 ms
+
+---------------------------------------------------------------------
+Skenario Serial (fsrcnn_serial_little, little core pinned)
+     Config: executable=fsrcnn_serial_little, little core pinned, 150 frames
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 1/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 1 selesai (206037 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/8 (Profil): 206037 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 2/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 2 selesai (204504 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/8 (Normal): 204504 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 3/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 3 selesai (200323 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/8 (Normal): 200323 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 4/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 4 selesai (201503 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 4/8 (Normal): 201503 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 5/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 5 selesai (202330 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 5/8 (Normal): 202330 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 6/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 6 selesai (204046 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 6/8 (Normal): 204046 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 7/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 7 selesai (201881 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 7/8 (Normal): 201881 ms
+
+[FOTO DAYA MULAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 8/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: Serial (fsrcnn_serial_little, little core pinned) | Run 8 selesai (203832 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 8/8 (Normal): 203832 ms
+
+     Rata-rata : 203057 ms
+
+---------------------------------------------------------------------
+Skenario A (SyncPilot, 4 workers)
+     Config: executable=fsrcnn_syncpilot, workers=4
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 1/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 1 selesai (11625 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/8 (Profil): 11625 ms
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 2/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 2 selesai (12368 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/8 (Normal): 12368 ms
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 3/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 3 selesai (12463 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/8 (Normal): 12463 ms
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 4/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 4 selesai (12811 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 4/8 (Normal): 12811 ms
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 5/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 5 selesai (12577 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 5/8 (Normal): 12577 ms
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 6/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 6 selesai (13104 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 6/8 (Normal): 13104 ms
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 7/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 7 selesai (13367 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 7/8 (Normal): 13367 ms
+
+[FOTO DAYA MULAI] Skenario: A (SyncPilot, 4 workers) | Run 8/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: A (SyncPilot, 4 workers) | Run 8 selesai (13395 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 8/8 (Normal): 13395 ms
+
+     Rata-rata : 12713 ms
+
+---------------------------------------------------------------------
+Skenario B (SyncPilot, 8 workers)
+     Config: executable=fsrcnn_syncpilot, workers=8
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 1/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 1 selesai (15540 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/8 (Profil): 15540 ms
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 2/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 2 selesai (16932 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/8 (Normal): 16932 ms
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 3/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 3 selesai (16089 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/8 (Normal): 16089 ms
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 4/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 4 selesai (17619 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 4/8 (Normal): 17619 ms
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 5/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 5 selesai (17168 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 5/8 (Normal): 17168 ms
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 6/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 6 selesai (17453 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 6/8 (Normal): 17453 ms
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 7/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 7 selesai (16371 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 7/8 (Normal): 16371 ms
+
+[FOTO DAYA MULAI] Skenario: B (SyncPilot, 8 workers) | Run 8/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: B (SyncPilot, 8 workers) | Run 8 selesai (17265 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 8/8 (Normal): 17265 ms
+
+     Rata-rata : 16804 ms
+
+---------------------------------------------------------------------
+Skenario C (SyncPilot, 10 workers)
+     Config: executable=fsrcnn_syncpilot, workers=10
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot, 10 workers) | Run 1/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot, 10 workers) | Run 1 selesai (17295 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/8 (Profil): 17295 ms
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot, 10 workers) | Run 2/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot, 10 workers) | Run 2 selesai (17784 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/8 (Normal): 17784 ms
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot, 10 workers) | Run 3/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot, 10 workers) | Run 3 selesai (17891 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/8 (Normal): 17891 ms
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot, 10 workers) | Run 4/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot, 10 workers) | Run 4 selesai (17712 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 4/8 (Normal): 17712 ms
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot, 10 workers) | Run 5/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot, 10 workers) | Run 5 selesai (16976 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 5/8 (Normal): 16976 ms
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot, 10 workers) | Run 6/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot, 10 workers) | Run 6 selesai (18145 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 6/8 (Normal): 18145 ms
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot, 10 workers) | Run 7/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot, 10 workers) | Run 7 selesai (17753 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 7/8 (Normal): 17753 ms
+
+[FOTO DAYA MULAI] Skenario: C (SyncPilot, 10 workers) | Run 8/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: C (SyncPilot, 10 workers) | Run 8 selesai (19085 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 8/8 (Normal): 19085 ms
+
+     Rata-rata : 17830 ms
+
+---------------------------------------------------------------------
+Skenario D (SyncPilot, 20 workers)
+     Config: executable=fsrcnn_syncpilot, workers=20
+---------------------------------------------------------------------
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot, 20 workers) | Run 1/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot, 20 workers) | Run 1 selesai (18914 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 1/8 (Profil): 18914 ms
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot, 20 workers) | Run 2/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot, 20 workers) | Run 2 selesai (19730 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 2/8 (Normal): 19730 ms
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot, 20 workers) | Run 3/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot, 20 workers) | Run 3 selesai (19632 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 3/8 (Normal): 19632 ms
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot, 20 workers) | Run 4/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot, 20 workers) | Run 4 selesai (19129 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 4/8 (Normal): 19129 ms
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot, 20 workers) | Run 5/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot, 20 workers) | Run 5 selesai (19711 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 5/8 (Normal): 19711 ms
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot, 20 workers) | Run 6/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot, 20 workers) | Run 6 selesai (19981 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 6/8 (Normal): 19981 ms
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot, 20 workers) | Run 7/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot, 20 workers) | Run 7 selesai (19542 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 7/8 (Normal): 19542 ms
+
+[FOTO DAYA MULAI] Skenario: D (SyncPilot, 20 workers) | Run 8/8
+Ambil/foto data daya sekarang, selama program sedang berjalan.
+[FOTO DAYA SELESAI] Skenario: D (SyncPilot, 20 workers) | Run 8 selesai (18495 ms).
+Setelah baris ini, tidak perlu foto sampai ada tanda FOTO DAYA MULAI berikutnya.
+     Run 8/8 (Normal): 18495 ms
+
+     Rata-rata : 19391 ms
+
+=============================================================================
+                       MENGHITUNG PSNR
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: menghitung PSNR.
+
+  Menghitung PSNR: Serial (fsrcnn_serial, big core pinned) ... inf dB
+  Menghitung PSNR: Serial (fsrcnn_serial_little, little core pinned) ... inf dB
+  Menghitung PSNR: A (SyncPilot, 4 workers)       ... inf dB
+  Menghitung PSNR: B (SyncPilot, 8 workers)       ... inf dB
+  Menghitung PSNR: C (SyncPilot, 10 workers)      ... inf dB
+  Menghitung PSNR: D (SyncPilot, 20 workers)      ... inf dB
+
+=============================================================================
+                         RINGKASAN HASIL
+=============================================================================
+
+Skenario                       |   Avg (ms) |   Min (ms) |   Max (ms) | Throughput(fps) |  PSNR (dB)
+-------------------------------+------------+------------+------------+-----------------+-----------
+Serial (fsrcnn_serial, big core pinned) |      45638 |      42844 |      47468 |            3.29 |        inf
+Serial (fsrcnn_serial_little, little core pinned) |     203057 |     200323 |     206037 |            0.74 |        inf
+A (SyncPilot, 4 workers)       |      12713 |      11625 |      13395 |           11.80 |        inf
+B (SyncPilot, 8 workers)       |      16804 |      15540 |      17619 |            8.93 |        inf
+C (SyncPilot, 10 workers)      |      17830 |      16976 |      19085 |            8.41 |        inf
+D (SyncPilot, 20 workers)      |      19391 |      18495 |      19981 |            7.74 |        inf
+
+=============================================================================
+                       ANALISIS SPEEDUP (vs Big Core Serial)
+=============================================================================
+
+SPEEDUP FACTOR [Big vs Little]: 0.22x (Big=45638ms / Little=203057ms)
+
+Serial (Big): Serial (fsrcnn_serial, big core pinned) (45638 ms)
+
+Skenario                       |      Speedup | Keterangan
+-------------------------------+--------------+---------------------
+Serial (fsrcnn_serial, big core pinned) |        1.00x | 1.00x lebih cepat dari Serial
+Serial (fsrcnn_serial_little, little core pinned) |        0.22x | 4.45x lebih lambat dari Serial
+A (SyncPilot, 4 workers)       |        3.59x | 3.59x lebih cepat dari Serial
+B (SyncPilot, 8 workers)       |        2.72x | 2.72x lebih cepat dari Serial
+C (SyncPilot, 10 workers)      |        2.56x | 2.56x lebih cepat dari Serial
+D (SyncPilot, 20 workers)      |        2.35x | 2.35x lebih cepat dari Serial
+
+=============================================================================
+                    CEK KONSISTENSI OUTPUT
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: cek konsistensi output.
+
+  Serial (fsrcnn_serial, big core pinned) : IDENTIK ✓
+  Serial (fsrcnn_serial_little, little core pinned) : IDENTIK ✓
+  A (SyncPilot, 4 workers)       : IDENTIK ✓
+  B (SyncPilot, 8 workers)       : IDENTIK ✓
+  C (SyncPilot, 10 workers)      : IDENTIK ✓
+  D (SyncPilot, 20 workers)      : IDENTIK ✓
+
+=============================================================================
+                  MENULIS DATA & MEMBUAT GRAFIK (GNUPLOT)
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: menulis data dan membuat grafik.
+
+  [✓] File data gnuplot berhasil diperbarui di: /home/orangepi/FSRCNN/sync-pilot/example/fsrcnn/benchmark_data.dat
+  [✓] Grafik throughput (fsrcnn_throughput.png) dan waktu (fsrcnn_time.png) berhasil digenerate!
+
+=============================================================================
+                       BENCHMARK SELESAI
+=============================================================================
