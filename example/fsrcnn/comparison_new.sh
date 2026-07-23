@@ -43,6 +43,7 @@ EXPECTED_OUTPUT_SIZE=$((OUT_WIDTH * OUT_HEIGHT * 3 / 2 * TOTAL_FRAMES))
 SCENARIOS=(
     # "BASE"
     "SER"
+    "LIT"
     "A"
     "B"
     "C"
@@ -52,18 +53,19 @@ SCENARIOS=(
 LABELS=(
     # "Baseline (fsrcnn_baseline, parallel)"
     "Serial (fsrcnn_serial, big core pinned)"
+    "Serial (fsrcnn_serial_little, little core pinned)"
     "A (SyncPilot, 4 workers)"
     "B (SyncPilot, 8 workers)"
     "C (SyncPilot, 10 workers)"
     "D (SyncPilot, 20 workers)"
 )
 
-# SCENARIO_RUNNERS=(baseline serial syncpilot syncpilot syncpilot syncpilot)
-SCENARIO_RUNNERS=(serial syncpilot syncpilot syncpilot syncpilot)
+# SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
+SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot)
 
-SCENARIO_WORKERS=(150 4 8 10 20)
+SCENARIO_WORKERS=(150 150 4 8 10 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1 1)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
@@ -121,6 +123,7 @@ fi
 echo "Using compiler: $CC"
 $CC -O3 -fopenmp -o "${SCRIPT_DIR}/fsrcnn_baseline" "${SCRIPT_DIR}/fsrcnn_baseline.c" -lm
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_serial" "${SCRIPT_DIR}/fsrcnn_serial.c" -lm
+$CC -O3 -o "${SCRIPT_DIR}/fsrcnn_serial_little" "${SCRIPT_DIR}/fsrcnn_serial_little.c" -lm
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_syncpilot" "${SCRIPT_DIR}/fsrcnn_syncpilot.c" "${SCRIPT_DIR}/../../framework/syncpilot.c" -lpthread -lm
 echo "Kompilasi selesai."
 echo ""
@@ -200,6 +203,8 @@ run_scenario() {
         OMP_NUM_THREADS="$workers" "${SCRIPT_DIR}/fsrcnn_baseline" "$INPUT_PATH" "$output_file" > /dev/null 2>&1
     elif [ "$runner" = "serial" ]; then
         "${SCRIPT_DIR}/fsrcnn_serial" "$INPUT_PATH" "$output_file" "$TOTAL_FRAMES" > /dev/null 2>&1
+    elif [ "$runner" = "serial_little" ]; then
+        "${SCRIPT_DIR}/fsrcnn_serial_little" "$INPUT_PATH" "$output_file" "$TOTAL_FRAMES" > /dev/null 2>&1
     elif [ "$runner" = "hybrid" ]; then
         "${SCRIPT_DIR}/fsrcnn_syncpilot_hybrid" "$INPUT_PATH" "$output_file" "$workers" "$inner_threads" > /dev/null 2>&1
     elif [ "$runner" = "twopool" ]; then
@@ -261,6 +266,8 @@ for i in "${!SCENARIOS[@]}"; do
         echo "     Config: executable=fsrcnn_baseline, OMP_NUM_THREADS=${workers}"
     elif [ "$runner" = "serial" ]; then
         echo "     Config: executable=fsrcnn_serial, big core pinned, ${TOTAL_FRAMES} frames"
+    elif [ "$runner" = "serial_little" ]; then
+        echo "     Config: executable=fsrcnn_serial_little, little core pinned, ${TOTAL_FRAMES} frames"
     elif [ "$runner" = "hybrid" ]; then
         echo "     Config: executable=fsrcnn_syncpilot_hybrid, workers=${workers}, inner_threads=${inner_threads}"
     elif [ "$runner" = "twopool" ]; then
@@ -361,7 +368,7 @@ echo ""
 
 # ===================== SPEEDUP ANALYSIS =====================
 echo "============================================================================="
-echo "                       ANALISIS SPEEDUP (Ts/Tp)"
+echo "                       ANALISIS SPEEDUP (vs Big Core Serial)"
 echo "============================================================================="
 echo ""
 
@@ -443,6 +450,8 @@ for i in "${!SCENARIOS[@]}"; do
         short_label="${scen} (Baseline, ${workers}t)"
     elif [ "$runner" = "serial" ]; then
         short_label="${scen} (Serial, big core)"
+    elif [ "$runner" = "serial_little" ]; then
+        short_label="${scen} (Serial, little core)"
     elif [ "$runner" = "hybrid" ]; then
         short_label="${scen} (Hybrid, ${workers}w+${inner_threads}i)"
     elif [ "$runner" = "twopool" ]; then
