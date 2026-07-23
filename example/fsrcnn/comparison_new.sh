@@ -373,22 +373,36 @@ echo "==========================================================================
 echo ""
 
 serial_idx=-1
+serial_little_idx=-1
 for i in "${!SCENARIOS[@]}"; do
     if [ "${SCENARIO_RUNNERS[$i]}" = "serial" ]; then
         serial_idx=$i
-        break
+    elif [ "${SCENARIO_RUNNERS[$i]}" = "serial_little" ]; then
+        serial_little_idx=$i
     fi
 done
 
+if [ "$serial_idx" -ge 0 ] && [ "$serial_little_idx" -ge 0 ]; then
+    serial_time=${TIMES_AVG[$serial_idx]}
+    little_time=${TIMES_AVG[$serial_little_idx]}
+    if [ "$little_time" -gt 0 ] && [ "$serial_time" -gt 0 ]; then
+        big_vs_little=$(awk "BEGIN {printf \"%.2f\", $serial_time / $little_time}")
+        echo "SPEEDUP FACTOR [Big vs Little]: ${big_vs_little}x (Big=${serial_time}ms / Little=${little_time}ms)"
+    else
+        echo "SPEEDUP FACTOR [Big vs Little]: N/A"
+    fi
+    echo ""
+fi
+
 serial_time=${TIMES_AVG[$serial_idx]}
-printf "Serial (Ts): %s (%d ms)\n\n" "${LABELS[$serial_idx]}" "$serial_time"
+printf "Serial (Big): %s (%d ms)\n\n" "${LABELS[$serial_idx]}" "$serial_time"
 printf "%-30s | %12s | %s\n" "Skenario" "Speedup" "Keterangan"
 printf "%-30s-+-%12s-+-%s\n" "------------------------------" "------------" "--------------------"
 
 for i in "${!SCENARIOS[@]}"; do
     label="${LABELS[$i]}"
     avg=${TIMES_AVG[$i]}
-    
+
     if [ "$avg" -gt 0 ]; then
         speedup=$(awk "BEGIN {printf \"%.2f\", $serial_time / $avg}")
         if (( $(awk "BEGIN {print ($speedup >= 1.0) ? 1 : 0}") )); then
@@ -401,7 +415,7 @@ for i in "${!SCENARIOS[@]}"; do
         speedup="N/A"
         keterangan="Error"
     fi
-    
+
     printf "%-30s | %12s | %s\n" "${label}" "${speedup}x" "$keterangan"
 done
 echo ""
