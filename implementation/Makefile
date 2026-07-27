@@ -26,7 +26,8 @@ SOURCES = $(SRC_DIR)/fsrcnn_syncpilot.c $(FRAMEWORK_DIR)/syncpilot.c
 
 # Target binaries
 TARGETS = $(RESULTS_DIR)/fsrcnn_thread1 $(RESULTS_DIR)/fsrcnn_thread2 \
-          $(RESULTS_DIR)/fsrcnn_thread4 $(RESULTS_DIR)/fsrcnn_thread8
+          $(RESULTS_DIR)/fsrcnn_thread4 $(RESULTS_DIR)/fsrcnn_thread8 \
+          $(RESULTS_DIR)/fsrcnn_thread10 $(RESULTS_DIR)/fsrcnn_thread20
 
 # Default target: only build binaries
 all: $(TARGETS)
@@ -52,19 +53,23 @@ $(RESULTS_DIR)/fsrcnn_thread8: $(SOURCES)
 	mkdir -p $(RESULTS_DIR)
 	$(CC) $(CFLAGS) -o $@ $(SOURCES) $(LDFLAGS)
 
+$(RESULTS_DIR)/fsrcnn_thread10: $(SOURCES)
+	@echo "Building thread10..."
+	mkdir -p $(RESULTS_DIR)
+	$(CC) $(CFLAGS) -o $@ $(SOURCES) $(LDFLAGS)
+
+$(RESULTS_DIR)/fsrcnn_thread20: $(SOURCES)
+	@echo "Building thread20..."
+	mkdir -p $(RESULTS_DIR)
+	$(CC) $(CFLAGS) -o $@ $(SOURCES) $(LDFLAGS)
+
 # Run Full Profiling Suite
-# Note: perf requires CAP_PERFMON or perf_event_paranoid <= 0.
-#   To allow without sudo (requires root once):
-#     echo "kernel.perf_event_paranoid = -1" | sudo tee -a /etc/sysctl.conf
-#     sudo sysctl -p
-#   Or run this target with sudo:
-#     sudo make run_profiling
 run_profiling: $(TARGETS)
 	@echo "=========================================="
 	@echo "Running Full Profiling Suite..."
 	@echo "=========================================="
 	@mkdir -p $(OUTPUT_DIR) $(GPROF_DIR) $(PERF_DIR)
-	@for workers in 1 2 4 8; do \
+	@for workers in 1 2 4 8 10 20; do \
 		echo "Running thread$$workers..." ; \
 		perf record -F 99 \
 			--output $(RESULTS_DIR)/fsrcnn_thread$$workers.perf_data \
@@ -79,7 +84,7 @@ run_profiling: $(TARGETS)
 		fi; \
 		perf stat -e cycles,instructions,cache-references,cache-misses \
 			$(RESULTS_DIR)/fsrcnn_thread$$workers $(INPUT_YUV) \
-			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers > $(PERF_DIR)/perf_thread$$workers.txt || echo "perf stat failed" ; \
+			$(OUTPUT_DIR)/out_thread$$workers.yuv $$workers 2> $(PERF_DIR)/perf_thread$$workers.txt || echo "perf stat failed" ; \
 	done
 
 # Alias for run_profiling

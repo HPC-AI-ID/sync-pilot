@@ -1,0 +1,785 @@
+==================================================
+🔥 [IC-RCE] HASIL ESTIMASI BIAYA PER-STAGE/LAYER FSRCNN
+==================================================
+Layer 1: 0.005989 detik
+Layer 2: 0.009439 detik
+Layer 3: 0.003617 detik
+Layer 4: 0.003224 detik
+Layer 5: 0.002822 detik
+Layer 6: 0.002810 detik
+Layer 7: 0.009969 detik
+Layer 8: 0.044922 detik
+==================================================
+
+
+-----
+
+lab_iot@node6:~/FSRCNN/sync-pilot/implementation$ sudo make run_profiling
+==========================================
+Running Full Profiling Suite...
+==========================================
+Running thread1...
+Akan memproses 150 frame dari input.
+Bobot & bias berhasil dimuat.
+Memulai Engine SyncPilot...
+Frame 1 selesai diproses.
+Frame 2 selesai diproses.
+Frame 3 selesai diproses.
+Frame 4 selesai diproses.
+Frame 5 selesai diproses.
+Frame 6 selesai diproses.
+Frame 7 selesai diproses.
+Frame 8 selesai diproses.
+Frame 9 selesai diproses.
+Frame 10 selesai diproses.
+Frame 11 selesai diproses.
+Frame 12 selesai diproses.
+Frame 13 selesai diproses.
+Frame 14 selesai diproses.
+Frame 15 selesai diproses.
+Frame 16 selesai diproses.
+Frame 17 selesai diproses.
+Frame 18 selesai diproses.
+Frame 19 selesai diproses.
+Frame 20 selesai diproses.
+Frame 21 selesai diproses.
+Frame 22 selesai diproses.
+Frame 23 selesai diproses.
+Frame 24 selesai diproses.
+Frame 25 selesai diproses.
+Frame 26 selesai diproses.
+Frame 27 selesai diproses.
+Frame 28 selesai diproses.
+Frame 29 selesai diproses.
+Frame 30 selesai diproses.
+Frame 31 selesai diproses.
+Frame 32 selesai diproses.
+Frame 33 selesai diproses.
+Frame 34 selesai diproses.
+Frame 35 selesai diproses.
+Frame 36 selesai diproses.
+Frame 37 selesai diproses.
+Frame 38 selesai diproses.
+Frame 39 selesai diproses.
+Frame 40 selesai diproses.
+Frame 41 selesai diproses.
+Frame 42 selesai diproses.
+Frame 43 selesai diproses.
+Frame 44 selesai diproses.
+Frame 45 selesai diproses.
+Frame 46 selesai diproses.
+Frame 47 selesai diproses.
+Frame 48 selesai diproses.
+Frame 49 selesai diproses.
+Frame 50 selesai diproses.
+Frame 51 selesai diproses.
+Frame 52 selesai diproses.
+Frame 53 selesai diproses.
+Frame 54 selesai diproses.
+Frame 55 selesai diproses.
+Frame 56 selesai diproses.
+Frame 57 selesai diproses.
+Frame 58 selesai diproses.
+Frame 59 selesai diproses.
+Frame 60 selesai diproses.
+Frame 61 selesai diproses.
+Frame 62 selesai diproses.
+Frame 63 selesai diproses.
+Frame 64 selesai diproses.
+Frame 65 selesai diproses.
+Frame 66 selesai diproses.
+Frame 67 selesai diproses.
+Frame 68 selesai diproses.
+Frame 69 selesai diproses.
+Frame 70 selesai diproses.
+Frame 71 selesai diproses.
+Frame 72 selesai diproses.
+Frame 73 selesai diproses.
+Frame 74 selesai diproses.
+Frame 75 selesai diproses.
+Frame 76 selesai diproses.
+Frame 77 selesai diproses.
+Frame 78 selesai diproses.
+Frame 79 selesai diproses.
+Frame 80 selesai diproses.
+Frame 81 selesai diproses.
+Frame 82 selesai diproses.
+Frame 83 selesai diproses.
+Frame 84 selesai diproses.
+Total 150 frame dimasukkan ke pipeline.
+Frame 85 selesai diproses.
+Frame 86 selesai diproses.
+Frame 87 selesai diproses.
+Frame 88 selesai diproses.
+Frame 89 selesai diproses.
+Frame 90 selesai diproses.
+Frame 91 selesai diproses.
+Frame 92 selesai diproses.
+Frame 93 selesai diproses.
+Frame 94 selesai diproses.
+Frame 95 selesai diproses.
+Frame 96 selesai diproses.
+Frame 97 selesai diproses.
+Frame 98 selesai diproses.
+Frame 99 selesai diproses.
+Frame 100 selesai diproses.
+Frame 101 selesai diproses.
+Frame 102 selesai diproses.
+Frame 103 selesai diproses.
+Frame 104 selesai diproses.
+Frame 105 selesai diproses.
+Frame 106 selesai diproses.
+Frame 107 selesai diproses.
+Frame 108 selesai diproses.
+Frame 109 selesai diproses.
+Frame 110 selesai diproses.
+Frame 111 selesai diproses.
+Frame 112 selesai diproses.
+Frame 113 selesai diproses.
+Frame 114 selesai diproses.
+Frame 115 selesai diproses.
+Frame 116 selesai diproses.
+Frame 117 selesai diproses.
+Frame 118 selesai diproses.
+Frame 119 selesai diproses.
+Frame 120 selesai diproses.
+Frame 121 selesai diproses.
+Frame 122 selesai diproses.
+Frame 123 selesai diproses.
+Frame 124 selesai diproses.
+Frame 125 selesai diproses.
+Frame 126 selesai diproses.
+Frame 127 selesai diproses.
+Frame 128 selesai diproses.
+Frame 129 selesai diproses.
+Frame 130 selesai diproses.
+Frame 131 selesai diproses.
+Frame 132 selesai diproses.
+Frame 133 selesai diproses.
+Frame 134 selesai diproses.
+Frame 135 selesai diproses.
+Frame 136 selesai diproses.
+Frame 137 selesai diproses.
+Frame 138 selesai diproses.
+Frame 139 selesai diproses.
+Frame 140 selesai diproses.
+Frame 141 selesai diproses.
+Frame 142 selesai diproses.
+Frame 143 selesai diproses.
+Frame 144 selesai diproses.
+Frame 145 selesai diproses.
+Frame 146 selesai diproses.
+Frame 147 selesai diproses.
+Frame 148 selesai diproses.
+Frame 149 selesai diproses.
+Frame 150 selesai diproses.
+
+==================================================
+🔥 [IC-RCE] HASIL ESTIMASI BIAYA PER-STAGE/LAYER FSRCNN
+==================================================
+Layer 1: 0.005831 detik
+Layer 2: 0.009340 detik
+Layer 3: 0.003550 detik
+Layer 4: 0.003249 detik
+Layer 5: 0.002802 detik
+Layer 6: 0.002806 detik
+Layer 7: 0.009876 detik
+Layer 8: 0.044859 detik
+==================================================
+
+Pipeline SyncPilot selesai, 150 frame ditulis ke disk.
+Selesai.
+[ perf record: Woken up 2 times to write data ]
+[ perf record: Captured and wrote 0.070 MB /home/lab_iot/FSRCNN/sync-pilot/results/fsrcnn_thread1.perf_data (1104 samples) ]
+
+ Performance counter stats for '/home/lab_iot/FSRCNN/sync-pilot/results/fsrcnn_thread1 /home/lab_iot/FSRCNN/sync-pilot/example/fsrcnn/suzie_qcif.yuv /home/lab_iot/FSRCNN/sync-pilot/results/outputs/out_thread1.yuv 1':
+
+        49,533,617      armv8_pmuv3_0/cycles/                                                   (0.12%)
+    43,204,929,533      armv8_pmuv3_1/cycles/                                                   (100.00%)
+        14,193,568      armv8_pmuv3_0/instructions/      #    0.29  insn per cycle              (0.12%)
+   166,282,287,060      armv8_pmuv3_1/instructions/      #    3.85  insn per cycle              (100.00%)
+         5,242,922      armv8_pmuv3_0/cache-references/                                         (0.12%)
+    79,841,646,677      armv8_pmuv3_1/cache-references/                                         (100.00%)
+           343,811      armv8_pmuv3_0/cache-misses/      #    6.56% of all cache refs           (0.12%)
+     1,411,105,413      armv8_pmuv3_1/cache-misses/      #    1.77% of all cache refs           (100.00%)
+
+      11.216583631 seconds time elapsed
+
+       9.141897000 seconds user
+       2.039977000 seconds sys
+
+
+Running thread2...
+Akan memproses 150 frame dari input.
+Bobot & bias berhasil dimuat.
+Memulai Engine SyncPilot...
+Frame 1 selesai diproses.
+Frame 2 selesai diproses.
+Frame 3 selesai diproses.
+Frame 4 selesai diproses.
+Frame 5 selesai diproses.
+Frame 6 selesai diproses.
+Frame 7 selesai diproses.
+Frame 8 selesai diproses.
+Frame 9 selesai diproses.
+Frame 10 selesai diproses.
+Frame 11 selesai diproses.
+Frame 12 selesai diproses.
+Frame 13 selesai diproses.
+Frame 14 selesai diproses.
+Frame 15 selesai diproses.
+Frame 16 selesai diproses.
+Frame 17 selesai diproses.
+Frame 18 selesai diproses.
+Frame 19 selesai diproses.
+Frame 20 selesai diproses.
+Frame 21 selesai diproses.
+Frame 22 selesai diproses.
+Frame 23 selesai diproses.
+Frame 24 selesai diproses.
+Frame 25 selesai diproses.
+Frame 26 selesai diproses.
+Frame 27 selesai diproses.
+Frame 28 selesai diproses.
+Frame 29 selesai diproses.
+Frame 30 selesai diproses.
+Frame 31 selesai diproses.
+Frame 32 selesai diproses.
+Frame 33 selesai diproses.
+Frame 34 selesai diproses.
+Frame 35 selesai diproses.
+Frame 36 selesai diproses.
+Frame 37 selesai diproses.
+Frame 38 selesai diproses.
+Frame 39 selesai diproses.
+Frame 40 selesai diproses.
+Frame 41 selesai diproses.
+Frame 42 selesai diproses.
+Frame 43 selesai diproses.
+Frame 44 selesai diproses.
+Frame 45 selesai diproses.
+Frame 46 selesai diproses.
+Frame 47 selesai diproses.
+Frame 48 selesai diproses.
+Frame 49 selesai diproses.
+Frame 50 selesai diproses.
+Frame 51 selesai diproses.
+Frame 52 selesai diproses.
+Frame 53 selesai diproses.
+Frame 54 selesai diproses.
+Frame 55 selesai diproses.
+Frame 56 selesai diproses.
+Frame 57 selesai diproses.
+Frame 58 selesai diproses.
+Frame 59 selesai diproses.
+Frame 60 selesai diproses.
+Frame 61 selesai diproses.
+Frame 62 selesai diproses.
+Frame 63 selesai diproses.
+Frame 64 selesai diproses.
+Frame 65 selesai diproses.
+Frame 66 selesai diproses.
+Frame 67 selesai diproses.
+Frame 68 selesai diproses.
+Frame 69 selesai diproses.
+Frame 70 selesai diproses.
+Frame 71 selesai diproses.
+Frame 72 selesai diproses.
+Frame 73 selesai diproses.
+Frame 74 selesai diproses.
+Frame 75 selesai diproses.
+Frame 76 selesai diproses.
+Frame 77 selesai diproses.
+Frame 78 selesai diproses.
+Frame 79 selesai diproses.
+Frame 80 selesai diproses.
+Frame 81 selesai diproses.
+Frame 82 selesai diproses.
+Frame 83 selesai diproses.
+Total 150 frame dimasukkan ke pipeline.
+Frame 84 selesai diproses.
+Frame 85 selesai diproses.
+Frame 86 selesai diproses.
+Frame 87 selesai diproses.
+Frame 88 selesai diproses.
+Frame 89 selesai diproses.
+Frame 90 selesai diproses.
+Frame 91 selesai diproses.
+Frame 92 selesai diproses.
+Frame 93 selesai diproses.
+Frame 94 selesai diproses.
+Frame 95 selesai diproses.
+Frame 96 selesai diproses.
+Frame 97 selesai diproses.
+Frame 98 selesai diproses.
+Frame 99 selesai diproses.
+Frame 100 selesai diproses.
+Frame 101 selesai diproses.
+Frame 102 selesai diproses.
+Frame 103 selesai diproses.
+Frame 104 selesai diproses.
+Frame 105 selesai diproses.
+Frame 106 selesai diproses.
+Frame 107 selesai diproses.
+Frame 108 selesai diproses.
+Frame 109 selesai diproses.
+Frame 110 selesai diproses.
+Frame 111 selesai diproses.
+Frame 112 selesai diproses.
+Frame 113 selesai diproses.
+Frame 114 selesai diproses.
+Frame 115 selesai diproses.
+Frame 116 selesai diproses.
+Frame 117 selesai diproses.
+Frame 118 selesai diproses.
+Frame 119 selesai diproses.
+Frame 120 selesai diproses.
+Frame 121 selesai diproses.
+Frame 122 selesai diproses.
+Frame 123 selesai diproses.
+Frame 124 selesai diproses.
+Frame 125 selesai diproses.
+Frame 126 selesai diproses.
+Frame 127 selesai diproses.
+Frame 128 selesai diproses.
+Frame 129 selesai diproses.
+Frame 130 selesai diproses.
+Frame 131 selesai diproses.
+Frame 132 selesai diproses.
+Frame 133 selesai diproses.
+Frame 134 selesai diproses.
+Frame 135 selesai diproses.
+Frame 136 selesai diproses.
+Frame 137 selesai diproses.
+Frame 138 selesai diproses.
+Frame 139 selesai diproses.
+Frame 140 selesai diproses.
+Frame 141 selesai diproses.
+Frame 142 selesai diproses.
+Frame 143 selesai diproses.
+Frame 144 selesai diproses.
+Frame 145 selesai diproses.
+Frame 146 selesai diproses.
+Frame 147 selesai diproses.
+Frame 148 selesai diproses.
+Frame 149 selesai diproses.
+Frame 150 selesai diproses.
+
+==================================================
+🔥 [IC-RCE] HASIL ESTIMASI BIAYA PER-STAGE/LAYER FSRCNN
+==================================================
+Layer 1: 0.005572 detik
+Layer 2: 0.011711 detik
+Layer 3: 0.003949 detik
+Layer 4: 0.003280 detik
+Layer 5: 0.002867 detik
+Layer 6: 0.002867 detik
+Layer 7: 0.010323 detik
+Layer 8: 0.048504 detik
+==================================================
+
+Pipeline SyncPilot selesai, 150 frame ditulis ke disk.
+Selesai.
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.070 MB /home/lab_iot/FSRCNN/sync-pilot/results/fsrcnn_thread2.perf_data (1100 samples) ]
+
+ Performance counter stats for '/home/lab_iot/FSRCNN/sync-pilot/results/fsrcnn_thread2 /home/lab_iot/FSRCNN/sync-pilot/example/fsrcnn/suzie_qcif.yuv /home/lab_iot/FSRCNN/sync-pilot/results/outputs/out_thread2.yuv 2':
+
+     <not counted>      armv8_pmuv3_0/cycles/                                                   (0.00%)
+    43,645,761,445      armv8_pmuv3_1/cycles/                                                 
+     <not counted>      armv8_pmuv3_0/instructions/                                             (0.00%)
+   166,278,518,575      armv8_pmuv3_1/instructions/      #    3.81  insn per cycle            
+     <not counted>      armv8_pmuv3_0/cache-references/                                         (0.00%)
+    79,852,478,707      armv8_pmuv3_1/cache-references/                                       
+     <not counted>      armv8_pmuv3_0/cache-misses/                                             (0.00%)
+     1,373,104,789      armv8_pmuv3_1/cache-misses/      #    1.72% of all cache refs         
+
+       5.683688164 seconds time elapsed
+
+       9.185591000 seconds user
+       2.099735000 seconds sys
+
+
+Running thread4...
+Akan memproses 150 frame dari input.
+Bobot & bias berhasil dimuat.
+Memulai Engine SyncPilot...
+Frame 1 selesai diproses.
+Frame 2 selesai diproses.
+Frame 3 selesai diproses.
+Frame 4 selesai diproses.
+Frame 5 selesai diproses.
+Frame 6 selesai diproses.
+Frame 7 selesai diproses.
+Frame 8 selesai diproses.
+Frame 9 selesai diproses.
+Frame 10 selesai diproses.
+Frame 11 selesai diproses.
+Frame 12 selesai diproses.
+Frame 13 selesai diproses.
+Frame 14 selesai diproses.
+Frame 15 selesai diproses.
+Frame 16 selesai diproses.
+Frame 17 selesai diproses.
+Frame 18 selesai diproses.
+Frame 19 selesai diproses.
+Frame 20 selesai diproses.
+Frame 21 selesai diproses.
+Frame 22 selesai diproses.
+Frame 23 selesai diproses.
+Frame 24 selesai diproses.
+Frame 25 selesai diproses.
+Frame 26 selesai diproses.
+Frame 27 selesai diproses.
+Frame 28 selesai diproses.
+Frame 29 selesai diproses.
+Frame 30 selesai diproses.
+Frame 31 selesai diproses.
+Frame 32 selesai diproses.
+Frame 33 selesai diproses.
+Frame 34 selesai diproses.
+Frame 35 selesai diproses.
+Frame 36 selesai diproses.
+Frame 37 selesai diproses.
+Frame 38 selesai diproses.
+Frame 39 selesai diproses.
+Frame 40 selesai diproses.
+Frame 41 selesai diproses.
+Frame 42 selesai diproses.
+Frame 43 selesai diproses.
+Frame 44 selesai diproses.
+Frame 45 selesai diproses.
+Frame 46 selesai diproses.
+Frame 47 selesai diproses.
+Frame 48 selesai diproses.
+Frame 49 selesai diproses.
+Frame 50 selesai diproses.
+Frame 51 selesai diproses.
+Frame 52 selesai diproses.
+Frame 53 selesai diproses.
+Frame 54 selesai diproses.
+Frame 55 selesai diproses.
+Frame 56 selesai diproses.
+Frame 57 selesai diproses.
+Frame 58 selesai diproses.
+Frame 59 selesai diproses.
+Frame 60 selesai diproses.
+Frame 61 selesai diproses.
+Frame 62 selesai diproses.
+Frame 63 selesai diproses.
+Frame 64 selesai diproses.
+Frame 65 selesai diproses.
+Frame 66 selesai diproses.
+Frame 67 selesai diproses.
+Frame 68 selesai diproses.
+Frame 69 selesai diproses.
+Frame 70 selesai diproses.
+Frame 71 selesai diproses.
+Frame 72 selesai diproses.
+Frame 73 selesai diproses.
+Frame 74 selesai diproses.
+Frame 75 selesai diproses.
+Frame 76 selesai diproses.
+Frame 77 selesai diproses.
+Frame 78 selesai diproses.
+Frame 79 selesai diproses.
+Frame 80 selesai diproses.
+Frame 81 selesai diproses.
+Frame 82 selesai diproses.
+Total 150 frame dimasukkan ke pipeline.
+Frame 83 selesai diproses.
+Frame 84 selesai diproses.
+Frame 85 selesai diproses.
+Frame 86 selesai diproses.
+Frame 87 selesai diproses.
+Frame 88 selesai diproses.
+Frame 89 selesai diproses.
+Frame 90 selesai diproses.
+Frame 91 selesai diproses.
+Frame 92 selesai diproses.
+Frame 93 selesai diproses.
+Frame 94 selesai diproses.
+Frame 95 selesai diproses.
+Frame 96 selesai diproses.
+Frame 97 selesai diproses.
+Frame 98 selesai diproses.
+Frame 99 selesai diproses.
+Frame 100 selesai diproses.
+Frame 101 selesai diproses.
+Frame 102 selesai diproses.
+Frame 103 selesai diproses.
+Frame 104 selesai diproses.
+Frame 105 selesai diproses.
+Frame 106 selesai diproses.
+Frame 107 selesai diproses.
+Frame 108 selesai diproses.
+Frame 109 selesai diproses.
+Frame 110 selesai diproses.
+Frame 111 selesai diproses.
+Frame 112 selesai diproses.
+Frame 113 selesai diproses.
+Frame 114 selesai diproses.
+Frame 115 selesai diproses.
+Frame 116 selesai diproses.
+Frame 117 selesai diproses.
+Frame 118 selesai diproses.
+Frame 119 selesai diproses.
+Frame 120 selesai diproses.
+Frame 121 selesai diproses.
+Frame 122 selesai diproses.
+Frame 123 selesai diproses.
+Frame 124 selesai diproses.
+Frame 125 selesai diproses.
+Frame 126 selesai diproses.
+Frame 127 selesai diproses.
+Frame 128 selesai diproses.
+Frame 129 selesai diproses.
+Frame 130 selesai diproses.
+Frame 131 selesai diproses.
+Frame 132 selesai diproses.
+Frame 133 selesai diproses.
+Frame 134 selesai diproses.
+Frame 135 selesai diproses.
+Frame 136 selesai diproses.
+Frame 137 selesai diproses.
+Frame 138 selesai diproses.
+Frame 139 selesai diproses.
+Frame 140 selesai diproses.
+Frame 141 selesai diproses.
+Frame 142 selesai diproses.
+Frame 143 selesai diproses.
+Frame 144 selesai diproses.
+Frame 145 selesai diproses.
+Frame 146 selesai diproses.
+Frame 147 selesai diproses.
+Frame 148 selesai diproses.
+Frame 149 selesai diproses.
+Frame 150 selesai diproses.
+
+==================================================
+🔥 [IC-RCE] HASIL ESTIMASI BIAYA PER-STAGE/LAYER FSRCNN
+==================================================
+Layer 1: 0.005620 detik
+Layer 2: 0.013888 detik
+Layer 3: 0.006541 detik
+Layer 4: 0.003645 detik
+Layer 5: 0.003217 detik
+Layer 6: 0.003273 detik
+Layer 7: 0.012991 detik
+Layer 8: 0.045144 detik
+==================================================
+
+Pipeline SyncPilot selesai, 150 frame ditulis ke disk.
+Selesai.
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.074 MB /home/lab_iot/FSRCNN/sync-pilot/results/fsrcnn_thread4.perf_data (1185 samples) ]
+
+ Performance counter stats for '/home/lab_iot/FSRCNN/sync-pilot/results/fsrcnn_thread4 /home/lab_iot/FSRCNN/sync-pilot/example/fsrcnn/suzie_qcif.yuv /home/lab_iot/FSRCNN/sync-pilot/results/outputs/out_thread4.yuv 4':
+
+     <not counted>      armv8_pmuv3_0/cycles/                                                   (0.00%)
+    46,877,427,204      armv8_pmuv3_1/cycles/                                                 
+     <not counted>      armv8_pmuv3_0/instructions/                                             (0.00%)
+   166,372,551,696      armv8_pmuv3_1/instructions/      #    3.55  insn per cycle            
+     <not counted>      armv8_pmuv3_0/cache-references/                                         (0.00%)
+    79,555,166,331      armv8_pmuv3_1/cache-references/                                       
+     <not counted>      armv8_pmuv3_0/cache-misses/                                             (0.00%)
+     1,631,020,847      armv8_pmuv3_1/cache-misses/      #    2.05% of all cache refs         
+
+       3.101528569 seconds time elapsed
+
+       9.962946000 seconds user
+       2.131914000 seconds sys
+
+
+Running thread8...
+Akan memproses 150 frame dari input.
+Bobot & bias berhasil dimuat.
+Memulai Engine SyncPilot...
+Frame 1 selesai diproses.
+Frame 2 selesai diproses.
+Frame 3 selesai diproses.
+Frame 4 selesai diproses.
+Frame 5 selesai diproses.
+Frame 6 selesai diproses.
+Frame 7 selesai diproses.
+Frame 8 selesai diproses.
+Frame 9 selesai diproses.
+Frame 10 selesai diproses.
+Frame 11 selesai diproses.
+Frame 12 selesai diproses.
+Frame 13 selesai diproses.
+Frame 14 selesai diproses.
+Frame 15 selesai diproses.
+Frame 16 selesai diproses.
+Frame 17 selesai diproses.
+Frame 18 selesai diproses.
+Frame 19 selesai diproses.
+Frame 20 selesai diproses.
+Frame 21 selesai diproses.
+Frame 22 selesai diproses.
+Frame 23 selesai diproses.
+Frame 24 selesai diproses.
+Frame 25 selesai diproses.
+Frame 26 selesai diproses.
+Frame 27 selesai diproses.
+Frame 28 selesai diproses.
+Frame 29 selesai diproses.
+Frame 30 selesai diproses.
+Frame 31 selesai diproses.
+Frame 32 selesai diproses.
+Frame 33 selesai diproses.
+Frame 34 selesai diproses.
+Frame 35 selesai diproses.
+Frame 36 selesai diproses.
+Frame 37 selesai diproses.
+Frame 38 selesai diproses.
+Frame 39 selesai diproses.
+Frame 40 selesai diproses.
+Frame 41 selesai diproses.
+Frame 42 selesai diproses.
+Frame 43 selesai diproses.
+Frame 44 selesai diproses.
+Frame 45 selesai diproses.
+Frame 46 selesai diproses.
+Frame 47 selesai diproses.
+Frame 48 selesai diproses.
+Frame 49 selesai diproses.
+Frame 50 selesai diproses.
+Frame 51 selesai diproses.
+Frame 52 selesai diproses.
+Frame 53 selesai diproses.
+Frame 54 selesai diproses.
+Frame 55 selesai diproses.
+Frame 56 selesai diproses.
+Frame 57 selesai diproses.
+Frame 58 selesai diproses.
+Frame 59 selesai diproses.
+Frame 60 selesai diproses.
+Frame 61 selesai diproses.
+Frame 62 selesai diproses.
+Frame 63 selesai diproses.
+Frame 64 selesai diproses.
+Frame 65 selesai diproses.
+Frame 66 selesai diproses.
+Frame 67 selesai diproses.
+Frame 68 selesai diproses.
+Frame 69 selesai diproses.
+Frame 70 selesai diproses.
+Frame 71 selesai diproses.
+Frame 72 selesai diproses.
+Frame 73 selesai diproses.
+Frame 74 selesai diproses.
+Frame 75 selesai diproses.
+Frame 76 selesai diproses.
+Frame 77 selesai diproses.
+Frame 78 selesai diproses.
+Total 150 frame dimasukkan ke pipeline.
+Frame 79 selesai diproses.
+Frame 80 selesai diproses.
+Frame 81 selesai diproses.
+Frame 82 selesai diproses.
+Frame 83 selesai diproses.
+Frame 84 selesai diproses.
+Frame 85 selesai diproses.
+Frame 86 selesai diproses.
+Frame 87 selesai diproses.
+Frame 88 selesai diproses.
+Frame 89 selesai diproses.
+Frame 90 selesai diproses.
+Frame 91 selesai diproses.
+Frame 92 selesai diproses.
+Frame 93 selesai diproses.
+Frame 94 selesai diproses.
+Frame 95 selesai diproses.
+Frame 96 selesai diproses.
+Frame 97 selesai diproses.
+Frame 98 selesai diproses.
+Frame 99 selesai diproses.
+Frame 100 selesai diproses.
+Frame 101 selesai diproses.
+Frame 102 selesai diproses.
+Frame 103 selesai diproses.
+Frame 104 selesai diproses.
+Frame 105 selesai diproses.
+Frame 106 selesai diproses.
+Frame 107 selesai diproses.
+Frame 108 selesai diproses.
+Frame 109 selesai diproses.
+Frame 110 selesai diproses.
+Frame 111 selesai diproses.
+Frame 112 selesai diproses.
+Frame 113 selesai diproses.
+Frame 114 selesai diproses.
+Frame 115 selesai diproses.
+Frame 116 selesai diproses.
+Frame 117 selesai diproses.
+Frame 118 selesai diproses.
+Frame 119 selesai diproses.
+Frame 120 selesai diproses.
+Frame 121 selesai diproses.
+Frame 122 selesai diproses.
+Frame 123 selesai diproses.
+Frame 124 selesai diproses.
+Frame 125 selesai diproses.
+Frame 126 selesai diproses.
+Frame 127 selesai diproses.
+Frame 128 selesai diproses.
+Frame 129 selesai diproses.
+Frame 130 selesai diproses.
+Frame 131 selesai diproses.
+Frame 132 selesai diproses.
+Frame 133 selesai diproses.
+Frame 134 selesai diproses.
+Frame 135 selesai diproses.
+Frame 136 selesai diproses.
+Frame 137 selesai diproses.
+Frame 138 selesai diproses.
+Frame 139 selesai diproses.
+Frame 140 selesai diproses.
+Frame 141 selesai diproses.
+Frame 142 selesai diproses.
+Frame 143 selesai diproses.
+Frame 144 selesai diproses.
+Frame 145 selesai diproses.
+Frame 146 selesai diproses.
+Frame 147 selesai diproses.
+Frame 148 selesai diproses.
+Frame 149 selesai diproses.
+Frame 150 selesai diproses.
+
+==================================================
+🔥 [IC-RCE] HASIL ESTIMASI BIAYA PER-STAGE/LAYER FSRCNN
+==================================================
+Layer 1: 0.005806 detik
+Layer 2: 0.016386 detik
+Layer 3: 0.008737 detik
+Layer 4: 0.004441 detik
+Layer 5: 0.003556 detik
+Layer 6: 0.003740 detik
+Layer 7: 0.014374 detik
+Layer 8: 0.056376 detik
+==================================================
+
+Pipeline SyncPilot selesai, 150 frame ditulis ke disk.
+Selesai.
+[ perf record: Woken up 2 times to write data ]
+[ perf record: Captured and wrote 0.073 MB /home/lab_iot/FSRCNN/sync-pilot/results/fsrcnn_thread8.perf_data (1162 samples) ]
+
+ Performance counter stats for '/home/lab_iot/FSRCNN/sync-pilot/results/fsrcnn_thread8 /home/lab_iot/FSRCNN/sync-pilot/example/fsrcnn/suzie_qcif.yuv /home/lab_iot/FSRCNN/sync-pilot/results/outputs/out_thread8.yuv 8':
+
+        66,142,780      armv8_pmuv3_0/cycles/                                                 
+    45,869,103,407      armv8_pmuv3_1/cycles/                                                   (99.77%)
+        96,371,022      armv8_pmuv3_0/instructions/      #    1.46  insn per cycle            
+   166,840,022,592      armv8_pmuv3_1/instructions/      #    3.64  insn per cycle              (99.77%)
+        29,503,020      armv8_pmuv3_0/cache-references/                                       
+    79,887,194,698      armv8_pmuv3_1/cache-references/                                         (99.77%)
+           500,306      armv8_pmuv3_0/cache-misses/      #    1.70% of all cache refs         
+     1,494,524,027      armv8_pmuv3_1/cache-misses/      #    1.87% of all cache refs           (99.77%)
+
+       1.599787226 seconds time elapsed
+
+       9.590203000 seconds user
+       2.325866000 seconds sys
+
+
+lab_iot@node6:~/FSRCNN/sync-pilot/implementation$ 
