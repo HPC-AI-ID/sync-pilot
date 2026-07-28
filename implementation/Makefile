@@ -91,30 +91,30 @@ run_profiling: $(TARGETS)
 profiling: run_profiling
 
 # -------------------------------------------------------
-# gprof Flat Profile for SyncPilot-4W
-# Usage: make gprof_4w
-# Produces: $(GPROF_DIR)/gprof_thread4_flat.txt
+# gprof Flat Profile for SyncPilot-10W (all-Big baseline)
+# Usage: make gprof_10w
+# Produces: $(GPROF_DIR)/gprof_thread10_flat.txt
 # -------------------------------------------------------
-gprof_4w: $(RESULTS_DIR)/fsrcnn_thread4
-	@echo "=== gprof profiling: SyncPilot-4W ==="
+gprof_10w: $(RESULTS_DIR)/fsrcnn_thread10
+	@echo "=== gprof profiling: SyncPilot-10W (all-Big baseline) ==="
 	@mkdir -p $(OUTPUT_DIR) $(GPROF_DIR)
-	@echo "Running binary with 4 workers (gmon.out will be generated)..."
+	@echo "Running binary with 10 workers (gmon.out will be generated)..."
 	@cd $(SRC_DIR) && \
-		$(RESULTS_DIR)/fsrcnn_thread4 $(INPUT_YUV) \
-		$(OUTPUT_DIR)/out_thread4_gprof.yuv 4
+		$(RESULTS_DIR)/fsrcnn_thread10 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_thread10_gprof.yuv 10
 	@echo "Analyzing gmon.out..."
 	@if [ -f $(SRC_DIR)/gmon.out ]; then \
-		gprof $(RESULTS_DIR)/fsrcnn_thread4 $(SRC_DIR)/gmon.out \
-			-p > $(GPROF_DIR)/gprof_thread4_flat.txt && \
-		gprof $(RESULTS_DIR)/fsrcnn_thread4 $(SRC_DIR)/gmon.out \
-			-q > $(GPROF_DIR)/gprof_thread4_callgraph.txt && \
-		echo "gprof 4W output saved to $(GPROF_DIR)/gprof_thread4_flat.txt" ; \
+		gprof $(RESULTS_DIR)/fsrcnn_thread10 $(SRC_DIR)/gmon.out \
+			-p > $(GPROF_DIR)/gprof_thread10_flat.txt && \
+		gprof $(RESULTS_DIR)/fsrcnn_thread10 $(SRC_DIR)/gmon.out \
+			-q > $(GPROF_DIR)/gprof_thread10_callgraph.txt && \
+		echo "gprof 10W output saved to $(GPROF_DIR)/gprof_thread10_flat.txt" ; \
 	elif [ -f gmon.out ]; then \
-		gprof $(RESULTS_DIR)/fsrcnn_thread4 gmon.out \
-			-p > $(GPROF_DIR)/gprof_thread4_flat.txt && \
-		gprof $(RESULTS_DIR)/fsrcnn_thread4 gmon.out \
-			-q > $(GPROF_DIR)/gprof_thread4_callgraph.txt && \
-		echo "gprof 4W output saved to $(GPROF_DIR)/gprof_thread4_flat.txt" ; \
+		gprof $(RESULTS_DIR)/fsrcnn_thread10 gmon.out \
+			-p > $(GPROF_DIR)/gprof_thread10_flat.txt && \
+		gprof $(RESULTS_DIR)/fsrcnn_thread10 gmon.out \
+			-q > $(GPROF_DIR)/gprof_thread10_callgraph.txt && \
+		echo "gprof 10W output saved to $(GPROF_DIR)/gprof_thread10_flat.txt" ; \
 	else \
 		echo "ERROR: gmon.out not found. Make sure binary was compiled with -pg" ; \
 	fi
@@ -335,7 +335,7 @@ help:
 	@echo "  all              - Build all configurations (default)"
 	@echo "  clean            - Remove all build artifacts"
 	@echo "  profiling        - Run full gprof + perf stat profiling"
-	@echo "  gprof_4w         - gprof flat profile for SyncPilot-4W (fresh)"
+	@echo "  gprof_10w        - gprof flat profile for SyncPilot-10W (all-Big baseline)"
 	@echo "  gprof_20w        - gprof flat profile for SyncPilot-20W"
 	@echo "  ipc_analysis_20w - Detailed IPC degradation analysis (20W)"
 	@echo "  ipc_proof_20w    - 4 controlled experiments to PROVE IPC drop cause"
@@ -347,4 +347,4 @@ help:
 	@echo "  install          - Install required tools"
 	@echo "  help             - Show this help message"
 
-.PHONY: all clean profiling gprof_4w gprof_20w ipc_analysis_20w ipc_proof_20w analyze report quick_test install help
+.PHONY: all clean profiling gprof_10w gprof_20w ipc_analysis_20w ipc_proof_20w analyze report quick_test install help
