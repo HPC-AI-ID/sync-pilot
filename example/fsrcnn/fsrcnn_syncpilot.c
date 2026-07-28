@@ -352,6 +352,24 @@ int main(int argc, char *argv[]) {
         cfg.enable_affinity = 0;
         printf("[INFO] SYNCPILOT_DISABLE_AFFINITY=1 terdeteksi. Core pinning (IC-RCE) DIMATIKAN.\n");
     }
+    
+    char *force_5b5l = getenv("SYNCPILOT_FORCE_5B5L");
+    if (force_5b5l && strcmp(force_5b5l, "1") == 0) {
+        // ASUS GX10 Topology:
+        // Big (10 cores): 6, 7, 8, 9, 10, 15, 16, 17, 18, 19
+        // LITTLE (10 cores): 0, 1, 2, 3, 4, 5, 11, 12, 13, 14
+        cfg.num_big_cores = 5;
+        cfg.num_little_cores = 5;
+        
+        int b_cores[] = {6, 7, 8, 9, 10};
+        int l_cores[] = {0, 1, 2, 3, 4};
+        
+        for (int i=0; i<5; i++) {
+            cfg.big_core_ids[i] = b_cores[i];
+            cfg.little_core_ids[i] = l_cores[i];
+        }
+        printf("[INFO] SYNCPILOT_FORCE_5B5L=1 terdeteksi. Memaksa 5 Big (6-10) & 5 LITTLE (0-4).\n");
+    }
 #endif
 
     printf("Memulai Engine SyncPilot...\n");
