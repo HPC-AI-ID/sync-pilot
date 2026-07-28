@@ -113,10 +113,14 @@ static int stage_matches_worker_preference_locked(PipelineEngine *engine, int st
             int is_heavy = estimated_cost >= heavy_threshold;
 
             if (steal_mode == 0) {
-                if (core_class == 1 && !is_heavy) return 0;
-                if (core_class == 0 && is_heavy) return 0;
+                // Mode Normal (Prioritas Ketat):
+                if (core_class == 1 && !is_heavy) return 0; // Big hindari ringan
+                if (core_class == 0 && is_heavy) return 0;  // LITTLE hindari berat
             } else if (steal_mode == 1) {
-                if (core_class == 0 && is_heavy && !urgent_backlog) return 0;
+                // Mode Steal (Work-Conserving Idle):
+                // LITTLE core diizinkan mengambil task berat (membantu Big core)
+                // Big core tetap dilarang mengambil task ringan agar cache fokus ke task berat
+                if (core_class == 1 && !is_heavy) return 0; 
             }
         }
     }
