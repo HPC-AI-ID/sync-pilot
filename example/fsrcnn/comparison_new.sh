@@ -48,6 +48,7 @@ SCENARIOS=(
     "B"
     "C"
     "D"
+    "CFS"
 )
 
 LABELS=(
@@ -58,14 +59,15 @@ LABELS=(
     "B (SyncPilot, 8 workers)"
     "C (SyncPilot, 10 workers)"
     "D (SyncPilot, 20 workers)"
+    "CFS (SyncPilot, 20 workers, No Affinity)"
 )
 
 # SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
-SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot)
+SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot cfs)
 
-SCENARIO_WORKERS=(150 150 4 8 10 20)
+SCENARIO_WORKERS=(150 150 4 8 10 20 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
@@ -209,6 +211,8 @@ run_scenario() {
         "${SCRIPT_DIR}/fsrcnn_syncpilot_hybrid" "$INPUT_PATH" "$output_file" "$workers" "$inner_threads" > /dev/null 2>&1
     elif [ "$runner" = "twopool" ]; then
         "${SCRIPT_DIR}/fsrcnn_syncpilot_twopool" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
+    elif [ "$runner" = "cfs" ]; then
+        SYNCPILOT_DISABLE_AFFINITY=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     else
         "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     fi
@@ -272,6 +276,8 @@ for i in "${!SCENARIOS[@]}"; do
         echo "     Config: executable=fsrcnn_syncpilot_hybrid, workers=${workers}, inner_threads=${inner_threads}"
     elif [ "$runner" = "twopool" ]; then
         echo "     Config: executable=fsrcnn_syncpilot_twopool, workers=${workers}, mode=4 big + 4 little"
+    elif [ "$runner" = "cfs" ]; then
+        echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}, SYNCPILOT_DISABLE_AFFINITY=1"
     else
         echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}"
     fi
@@ -470,6 +476,8 @@ for i in "${!SCENARIOS[@]}"; do
         short_label="${scen} (Hybrid, ${workers}w+${inner_threads}i)"
     elif [ "$runner" = "twopool" ]; then
         short_label="${scen} (Two-pool, 4b+4l)"
+    elif [ "$runner" = "cfs" ]; then
+        short_label="${scen} (CFS, 20w, No Affinity)"
     else
         short_label="${scen} (SyncPilot, ${workers}w)"
     fi
