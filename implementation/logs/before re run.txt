@@ -1,0 +1,9 @@
+lab_iot@node6:~/FSRCNN/sync-pilot/implementation$ grep "insn per cycle" \
+  /home/lab_iot/FSRCNN/sync-pilot/results/perf/ipc_proof/exp*.txt
+/home/lab_iot/FSRCNN/sync-pilot/results/perf/ipc_proof/exp2_20w_bigonly.txt:    68,728,419,116      armv8_pmuv3_0/instructions/      #    2.14  insn per cycle              (86.55%)
+/home/lab_iot/FSRCNN/sync-pilot/results/perf/ipc_proof/exp2_20w_bigonly.txt:   115,879,145,716      armv8_pmuv3_1/instructions/      #    2.98  insn per cycle              (92.92%)
+/home/lab_iot/FSRCNN/sync-pilot/results/perf/ipc_proof/exp3_10w_littleonly.txt:        79,233,733      armv8_pmuv3_0/instructions/      #    1.34  insn per cycle            
+/home/lab_iot/FSRCNN/sync-pilot/results/perf/ipc_proof/exp3_10w_littleonly.txt:   167,015,835,755      armv8_pmuv3_1/instructions/      #    3.61  insn per cycle              (99.79%)
+/home/lab_iot/FSRCNN/sync-pilot/results/perf/ipc_proof/exp4_big_during_20w.txt:    33,415,109,506      armv8_pmuv3_0/instructions/      #    2.37  insn per cycle            
+/home/lab_iot/FSRCNN/sync-pilot/results/perf/ipc_proof/exp4_big_during_20w.txt:    57,372,281,363      armv8_pmuv3_1/instructions/      #    3.24  insn per cycle            
+lab_iot@node6:~/FSRCNN/sync-pilot/implementation$ 

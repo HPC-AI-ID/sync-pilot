@@ -1,0 +1,12 @@
+[SYNCPILOT | CPU  0] Layer 1 memproses Frame   2 | Waktu: 5.24699 detik
+[SYNCPILOT | CPU  1] Layer 1 memproses Frame   1 | Waktu: 5.94166 detik
+[SYNCPILOT | CPU  1] Layer 2 memproses Frame   1 | Waktu: 58.22484 detik
+[SYNCPILOT | CPU  0] Layer 2 memproses Frame   2 | Waktu: 59.50165 detik
+[SYNCPILOT | CPU  0] Layer 3 memproses Frame   2 | Waktu: 13.12206 detik
+[SYNCPILOT | CPU  1] Layer 3 memproses Frame   1 | Waktu: 14.08290 detik
+[SYNCPILOT | CPU  0] Layer 4 memproses Frame   2 | Waktu: 13.22434 detik
+[SYNCPILOT | CPU  1] Layer 4 memproses Frame   1 | Waktu: 13.46526 detik
+[SYNCPILOT | CPU  0] Layer 5 memproses Frame   2 | Waktu: 13.31040 detik
+[SYNCPILOT | CPU  1] Layer 5 memproses Frame   1 | Waktu: 13.27186 detik
+[SYNCPILOT | CPU  0] Layer 6 memproses Frame   2 | Waktu: 13.64846 detik
+[SYNCPILOT | CPU  1] Layer 6 memproses Frame   1 | Waktu: 16.38054 detik

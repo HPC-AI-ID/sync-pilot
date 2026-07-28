@@ -1,0 +1,21 @@
+lab_iot@node6:~/FSRCNN/sync-pilot/implementation$ cat /sys/devices/system/cpu/cpu*/cpu_capacity
+718
+731
+731
+731
+731
+731
+1017
+1017
+1017
+1017
+1024
+718
+718
+718
+718
+997
+997
+997
+997
+997

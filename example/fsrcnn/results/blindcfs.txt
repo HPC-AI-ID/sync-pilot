@@ -89,3 +89,57 @@ CFS20-NOISE (CFS-20W under CPU Noise) |        8.26x | 8.26x lebih cepat dari Se
 =============================================================================
 
 lab_iot@node6:~/FSRCNN/sync-pilot/example/fsrcnn$ 
+
+
+
+----eksperimen brutal----
+=============================================================================
+                         RINGKASAN HASIL
+=============================================================================
+
+Skenario                       |   Avg (ms) |   Min (ms) |   Max (ms) | Throughput(fps) |  PSNR (dB)
+-------------------------------+------------+------------+------------+-----------------+-----------
+Serial (fsrcnn_serial, big core pinned) |      10174 |      10115 |      10216 |           14.74 |        inf
+D-NOISE (SyncPilot-20W under 4 Noise Threads) |       1216 |       1178 |       1256 |          123.36 |        inf
+CFS20-NOISE (CFS-20W under 4 Noise Threads) |       1314 |       1266 |       1344 |          114.16 |        inf
+D-NOISE-BRUTAL (SyncPilot-20W under 10 Noise Threads) |       1402 |       1375 |       1427 |          106.99 |        inf
+CFS20-NOISE-BRUTAL (CFS-20W under 10 Noise Threads) |       1689 |       1612 |       1769 |           88.81 |        inf
+
+=============================================================================
+                       ANALISIS SPEEDUP (vs Big Core Serial)
+=============================================================================
+
+Serial (Big): Serial (fsrcnn_serial, big core pinned) (10174 ms)
+
+Skenario                       |      Speedup | Keterangan
+-------------------------------+--------------+---------------------
+Serial (fsrcnn_serial, big core pinned) |        1.00x | 1.00x lebih cepat dari Serial
+D-NOISE (SyncPilot-20W under 4 Noise Threads) |        8.37x | 8.37x lebih cepat dari Serial
+CFS20-NOISE (CFS-20W under 4 Noise Threads) |        7.74x | 7.74x lebih cepat dari Serial
+D-NOISE-BRUTAL (SyncPilot-20W under 10 Noise Threads) |        7.26x | 7.26x lebih cepat dari Serial
+CFS20-NOISE-BRUTAL (CFS-20W under 10 Noise Threads) |        6.02x | 6.02x lebih cepat dari Serial
+
+=============================================================================
+                    CEK KONSISTENSI OUTPUT
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: cek konsistensi output.
+
+  Serial (fsrcnn_serial, big core pinned) : IDENTIK ✓
+  D-NOISE (SyncPilot-20W under 4 Noise Threads) : IDENTIK ✓
+  CFS20-NOISE (CFS-20W under 4 Noise Threads) : IDENTIK ✓
+  D-NOISE-BRUTAL (SyncPilot-20W under 10 Noise Threads) : IDENTIK ✓
+  CFS20-NOISE-BRUTAL (CFS-20W under 10 Noise Threads) : IDENTIK ✓
+
+=============================================================================
+                  MENULIS DATA & MEMBUAT GRAFIK (GNUPLOT)
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: menulis data dan membuat grafik.
+
+  [✓] File data gnuplot berhasil diperbarui di: /home/lab_iot/FSRCNN/sync-pilot/example/fsrcnn/benchmark_data.dat
+  [✓] Grafik throughput (fsrcnn_throughput.png) dan waktu (fsrcnn_time.png) berhasil digenerate!
+
+=============================================================================
+                       BENCHMARK SELESAI
+=============================================================================
+
+lab_iot@node6:~/FSRCNN/sync-pilot/example/fsrcnn$ 
