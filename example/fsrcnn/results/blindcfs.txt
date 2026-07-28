@@ -1,0 +1,91 @@
+============================================================================
+                       MENGHITUNG PSNR
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: menghitung PSNR.
+
+  Menghitung PSNR: Serial (fsrcnn_serial, big core pinned) ... inf dB
+  Menghitung PSNR: Serial (fsrcnn_serial_little, little core pinned) ... inf dB
+  Menghitung PSNR: A (SyncPilot, 4 workers)       ... inf dB
+  Menghitung PSNR: B (SyncPilot, 8 workers)       ... inf dB
+  Menghitung PSNR: C (SyncPilot, 10 workers)      ... inf dB
+  Menghitung PSNR: D (SyncPilot, 20 workers)      ... inf dB
+  Menghitung PSNR: 5B5L (SyncPilot, 10 workers, 5 Big + 5 Little) ... inf dB
+  Menghitung PSNR: CFS-10W (SyncPilot, 10 workers, No Affinity) ... inf dB
+  Menghitung PSNR: CFS-20W (SyncPilot, 20 workers, No Affinity) ... inf dB
+  Menghitung PSNR: NAIVE (Naive OpenMP 20W, Race Condition) ... 20.840741 dB
+  Menghitung PSNR: D-NOISE (SyncPilot-20W under CPU Noise) ... inf dB
+  Menghitung PSNR: CFS20-NOISE (CFS-20W under CPU Noise) ... inf dB
+
+=============================================================================
+                         RINGKASAN HASIL
+=============================================================================
+
+Skenario                       |   Avg (ms) |   Min (ms) |   Max (ms) | Throughput(fps) |  PSNR (dB)
+-------------------------------+------------+------------+------------+-----------------+-----------
+Serial (fsrcnn_serial, big core pinned) |      10452 |      10384 |      10484 |           14.35 |        inf
+Serial (fsrcnn_serial_little, little core pinned) |      19064 |      18927 |      19424 |            7.87 |        inf
+A (SyncPilot, 4 workers)       |       3025 |       3001 |       3049 |           49.59 |        inf
+B (SyncPilot, 8 workers)       |       1587 |       1571 |       1598 |           94.52 |        inf
+C (SyncPilot, 10 workers)      |       1345 |       1328 |       1360 |          111.52 |        inf
+D (SyncPilot, 20 workers)      |       1133 |       1119 |       1171 |          132.39 |        inf
+5B5L (SyncPilot, 10 workers, 5 Big + 5 Little) |       2072 |       2037 |       2096 |           72.39 |        inf
+CFS-10W (SyncPilot, 10 workers, No Affinity) |       1343 |       1325 |       1368 |          111.69 |        inf
+CFS-20W (SyncPilot, 20 workers, No Affinity) |       1046 |       1025 |       1067 |          143.40 |        inf
+NAIVE (Naive OpenMP 20W, Race Condition) |       6184 |       6129 |       6244 |           24.26 |  20.840741
+D-NOISE (SyncPilot-20W under CPU Noise) |       1216 |       1184 |       1236 |          123.36 |        inf
+CFS20-NOISE (CFS-20W under CPU Noise) |       1265 |       1230 |       1288 |          118.58 |        inf
+
+=============================================================================
+                       ANALISIS SPEEDUP (vs Big Core Serial)
+=============================================================================
+
+SPEEDUP FACTOR [Big vs Little]: 0.55x (Big=10452ms / Little=19064ms)
+
+Serial (Big): Serial (fsrcnn_serial, big core pinned) (10452 ms)
+
+Skenario                       |      Speedup | Keterangan
+-------------------------------+--------------+---------------------
+Serial (fsrcnn_serial, big core pinned) |        1.00x | 1.00x lebih cepat dari Serial
+Serial (fsrcnn_serial_little, little core pinned) |        0.55x | 1.82x lebih lambat dari Serial
+A (SyncPilot, 4 workers)       |        3.46x | 3.46x lebih cepat dari Serial
+B (SyncPilot, 8 workers)       |        6.59x | 6.59x lebih cepat dari Serial
+C (SyncPilot, 10 workers)      |        7.77x | 7.77x lebih cepat dari Serial
+D (SyncPilot, 20 workers)      |        9.23x | 9.23x lebih cepat dari Serial
+5B5L (SyncPilot, 10 workers, 5 Big + 5 Little) |        5.04x | 5.04x lebih cepat dari Serial
+CFS-10W (SyncPilot, 10 workers, No Affinity) |        7.78x | 7.78x lebih cepat dari Serial
+CFS-20W (SyncPilot, 20 workers, No Affinity) |        9.99x | 9.99x lebih cepat dari Serial
+NAIVE (Naive OpenMP 20W, Race Condition) |        1.69x | 1.69x lebih cepat dari Serial
+D-NOISE (SyncPilot-20W under CPU Noise) |        8.60x | 8.60x lebih cepat dari Serial
+CFS20-NOISE (CFS-20W under CPU Noise) |        8.26x | 8.26x lebih cepat dari Serial
+
+=============================================================================
+                    CEK KONSISTENSI OUTPUT
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: cek konsistensi output.
+
+  Serial (fsrcnn_serial, big core pinned) : IDENTIK ✓
+  Serial (fsrcnn_serial_little, little core pinned) : IDENTIK ✓
+  A (SyncPilot, 4 workers)       : IDENTIK ✓
+  B (SyncPilot, 8 workers)       : IDENTIK ✓
+  C (SyncPilot, 10 workers)      : IDENTIK ✓
+  D (SyncPilot, 20 workers)      : IDENTIK ✓
+  5B5L (SyncPilot, 10 workers, 5 Big + 5 Little) : IDENTIK ✓
+  CFS-10W (SyncPilot, 10 workers, No Affinity) : IDENTIK ✓
+  CFS-20W (SyncPilot, 20 workers, No Affinity) : IDENTIK ✓
+  NAIVE (Naive OpenMP 20W, Race Condition) : BERBEDA ✗ (8979451 bytes berbeda)
+  D-NOISE (SyncPilot-20W under CPU Noise) : IDENTIK ✓
+  CFS20-NOISE (CFS-20W under CPU Noise) : IDENTIK ✓
+
+=============================================================================
+                  MENULIS DATA & MEMBUAT GRAFIK (GNUPLOT)
+=============================================================================
+[FOTO DAYA] Tidak perlu foto: menulis data dan membuat grafik.
+
+  [✓] File data gnuplot berhasil diperbarui di: /home/lab_iot/FSRCNN/sync-pilot/example/fsrcnn/benchmark_data.dat
+  [✓] Grafik throughput (fsrcnn_throughput.png) dan waktu (fsrcnn_time.png) berhasil digenerate!
+
+=============================================================================
+                       BENCHMARK SELESAI
+=============================================================================
+
+lab_iot@node6:~/FSRCNN/sync-pilot/example/fsrcnn$ 

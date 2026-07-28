@@ -41,17 +41,7 @@ EXPECTED_OUTPUT_SIZE=$((OUT_WIDTH * OUT_HEIGHT * 3 / 2 * TOTAL_FRAMES))
 
 # Skenario Percobaan
 SCENARIOS=(
-    # "BASE"
     "SER"
-    "LIT"
-    "A"
-    "B"
-    "C"
-    "D"
-    "5B5L"
-    "CFS10"
-    "CFS20"
-    "NAIVE"
     "D_NOISE"
     "CFS20_NOISE"
     "D_NOISE_BRUTAL"
@@ -59,29 +49,19 @@ SCENARIOS=(
 )
 
 LABELS=(
-    # "Baseline (fsrcnn_baseline, parallel)"
     "Serial (fsrcnn_serial, big core pinned)"
-    "Serial (fsrcnn_serial_little, little core pinned)"
-    "A (SyncPilot, 4 workers)"
-    "B (SyncPilot, 8 workers)"
-    "C (SyncPilot, 10 workers)"
-    "D (SyncPilot, 20 workers)"
-    "5B5L (SyncPilot, 10 workers, 5 Big + 5 Little)"
-    "CFS-10W (SyncPilot, 10 workers, No Affinity)"
-    "CFS-20W (SyncPilot, 20 workers, No Affinity)"
-    "NAIVE (Naive OpenMP 20W, Race Condition)"
-    "D-NOISE (SyncPilot-20W under CPU Noise)"
-    "CFS20-NOISE (CFS-20W under CPU Noise)"
+    "D-NOISE (SyncPilot-20W under 4 Noise Threads)"
+    "CFS20-NOISE (CFS-20W under 4 Noise Threads)"
     "D-NOISE-BRUTAL (SyncPilot-20W under 10 Noise Threads)"
     "CFS20-NOISE-BRUTAL (CFS-20W under 10 Noise Threads)"
 )
 
 # SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
-SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot 5b5l cfs cfs naive syncpilot cfs syncpilot cfs)
+SCENARIO_RUNNERS=(serial syncpilot cfs syncpilot cfs)
 
-SCENARIO_WORKERS=(150 150 4 8 10 20 10 10 20 20 20 20 20 20)
+SCENARIO_WORKERS=(150 20 20 20 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1 1 1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
