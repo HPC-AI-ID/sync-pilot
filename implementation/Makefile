@@ -121,55 +121,41 @@ gprof_20w: $(RESULTS_DIR)/fsrcnn_thread20
 
 # -------------------------------------------------------
 # Detailed IPC Degradation Analysis for SyncPilot-20W
-# Measures: stall cycles, branch misses, LLC misses, bus cycles
+# Measures: stall cycles, L1/L2 cache refills, branch misses, OS overhead
 # Usage: make ipc_analysis_20w
 # Produces: $(PERF_DIR)/ipc_analysis_thread20.txt
 # -------------------------------------------------------
 ipc_analysis_20w: $(RESULTS_DIR)/fsrcnn_thread20
 	@echo "=== IPC Degradation Analysis: SyncPilot-20W ==="
 	@mkdir -p $(OUTPUT_DIR) $(PERF_DIR)
-	@echo "--- Pass 1: Pipeline stall counters ---"
-	perf stat \
-		-e cycles,instructions,\
-arcpmu/stall_slot/,\
-arcpmu/stall_frontend/,\
-arcpmu/stall_backend/,\
-arcpmu/stall_backend_mem/ \
-		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
-		$(OUTPUT_DIR)/out_ipc20_pass1.yuv 20 \
-		2>> $(PERF_DIR)/ipc_analysis_thread20.txt || \
-	perf stat \
-		-e cycles,instructions,\
-stalled-cycles-frontend,\
-stalled-cycles-backend,\
-branch-misses,\
-cache-misses \
+	@rm -f $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "--- Pass 1: Baseline IPC (known-good events) ---"
+	@echo "=== PASS 1: Baseline IPC ===" >> $(PERF_DIR)/ipc_analysis_thread20.txt
+	perf stat -e "cycles,instructions,cache-references,cache-misses" \
 		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
 		$(OUTPUT_DIR)/out_ipc20_pass1.yuv 20 \
 		2>> $(PERF_DIR)/ipc_analysis_thread20.txt
-	@echo "--- Pass 2: Memory bandwidth & LLC ---"
-	perf stat \
-		-e cycles,instructions,\
-L1-dcache-loads,L1-dcache-load-misses,\
-L1-dcache-stores,\
-LLC-loads,LLC-load-misses,\
-mem-loads,mem-stores \
+	@echo "" >> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "--- Pass 2: ARM L1/L2 cache refill counters ---"
+	@echo "=== PASS 2: ARM Cache Counters ===" >> $(PERF_DIR)/ipc_analysis_thread20.txt
+	perf stat -e "armv8_pmuv3_1/l1d_cache/,armv8_pmuv3_1/l1d_cache_refill/,armv8_pmuv3_1/l2d_cache/,armv8_pmuv3_1/l2d_cache_refill/,armv8_pmuv3_1/bus_cycles/" \
 		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
 		$(OUTPUT_DIR)/out_ipc20_pass2.yuv 20 \
-		2>> $(PERF_DIR)/ipc_analysis_thread20.txt
-	@echo "--- Pass 3: Context-switch & migration overhead ---"
-	perf stat \
-		-e cycles,instructions,\
-context-switches,cpu-migrations,\
-task-clock,\
-cpu-clock \
+		2>> $(PERF_DIR)/ipc_analysis_thread20.txt || \
+	echo "SKIP: ARM cache PMU events not available, try: perf list | grep armv8" \
+		>> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "" >> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "--- Pass 3: Branch misses & OS overhead ---"
+	@echo "=== PASS 3: Branch + OS Overhead ===" >> $(PERF_DIR)/ipc_analysis_thread20.txt
+	perf stat -e "cycles,instructions,branch-misses,context-switches,cpu-migrations,task-clock" \
 		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
 		$(OUTPUT_DIR)/out_ipc20_pass3.yuv 20 \
 		2>> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo ""
 	@echo "IPC analysis saved to $(PERF_DIR)/ipc_analysis_thread20.txt"
 	@echo ""
 	@echo "=== QUICK SUMMARY ==="
-	@grep -E "insn per cycle|stall|miss|migration|switch" \
+	@grep -E "insn per cycle|refill|miss|migration|switch|branch" \
 		$(PERF_DIR)/ipc_analysis_thread20.txt || true
 
 # Run Analysis
