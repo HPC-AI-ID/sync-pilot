@@ -52,6 +52,8 @@ SCENARIOS=(
     "CFS10"
     "CFS20"
     "NAIVE"
+    "D_NOISE"
+    "CFS20_NOISE"
 )
 
 LABELS=(
@@ -66,14 +68,16 @@ LABELS=(
     "CFS-10W (SyncPilot, 10 workers, No Affinity)"
     "CFS-20W (SyncPilot, 20 workers, No Affinity)"
     "NAIVE (Naive OpenMP 20W, Race Condition)"
+    "D-NOISE (SyncPilot-20W under CPU Noise)"
+    "CFS20-NOISE (CFS-20W under CPU Noise)"
 )
 
 # SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
-SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot 5b5l cfs cfs naive)
+SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot 5b5l cfs cfs naive syncpilot cfs)
 
-SCENARIO_WORKERS=(150 150 4 8 10 20 10 10 20 20)
+SCENARIO_WORKERS=(150 150 4 8 10 20 10 10 20 20 20 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1 1 1 1)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
@@ -134,6 +138,7 @@ $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_serial" "${SCRIPT_DIR}/fsrcnn_serial.c" -lm
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_serial_little" "${SCRIPT_DIR}/fsrcnn_serial_little.c" -lm
 $CC -O3 -fopenmp -o "${SCRIPT_DIR}/fsrcnn_naive_openmp" "${SCRIPT_DIR}/fsrcnn_naive_openmp.c" -lm
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_syncpilot" "${SCRIPT_DIR}/fsrcnn_syncpilot.c" "${SCRIPT_DIR}/../../framework/syncpilot.c" -lpthread -lm
+$CC -O3 -fopenmp -o "${SCRIPT_DIR}/noise_generator" "${SCRIPT_DIR}/noise_generator.c" -lm
 echo "Kompilasi selesai."
 echo ""
 
@@ -300,6 +305,15 @@ for i in "${!SCENARIOS[@]}"; do
     min_time=999999999
     max_time=0
 
+    # START NOISE IF REQUIRED
+    NOISE_PID=""
+    if [[ "$scen" == *"_NOISE"* ]]; then
+        echo "     [!] Mengaktifkan System Noise Generator..."
+        "${SCRIPT_DIR}/noise_generator" > /dev/null 2>&1 &
+        NOISE_PID=$!
+        sleep 2
+    fi
+
     for ((run=1; run<=NUM_RUNS; run++)); do
         rm -f "$output_file"
 
@@ -321,6 +335,12 @@ for i in "${!SCENARIOS[@]}"; do
         fi
     done
     
+    # STOP NOISE IF RUNNING
+    if [[ -n "$NOISE_PID" ]]; then
+        echo "     [!] Mematikan System Noise Generator..."
+        kill -9 $NOISE_PID 2>/dev/null || true
+    fi
+
     # Hitung rata-rata
     avg_time=$((total_time / NUM_RUNS))
     TIMES_AVG[$i]=$avg_time
