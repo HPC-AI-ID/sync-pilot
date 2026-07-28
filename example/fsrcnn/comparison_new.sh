@@ -49,7 +49,8 @@ SCENARIOS=(
     "C"
     "D"
     "5B5L"
-    "CFS"
+    "CFS10"
+    "CFS20"
 )
 
 LABELS=(
@@ -61,15 +62,16 @@ LABELS=(
     "C (SyncPilot, 10 workers)"
     "D (SyncPilot, 20 workers)"
     "5B5L (SyncPilot, 10 workers, 5 Big + 5 Little)"
-    "CFS (SyncPilot, 20 workers, No Affinity)"
+    "CFS-10W (SyncPilot, 10 workers, No Affinity)"
+    "CFS-20W (SyncPilot, 20 workers, No Affinity)"
 )
 
 # SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
-SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot 5b5l cfs)
+SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot 5b5l cfs cfs)
 
-SCENARIO_WORKERS=(150 150 4 8 10 20 10 20)
+SCENARIO_WORKERS=(150 150 4 8 10 20 10 10 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
@@ -483,7 +485,11 @@ for i in "${!SCENARIOS[@]}"; do
     elif [ "$runner" = "twopool" ]; then
         short_label="${scen} (Two-pool, 4b+4l)"
     elif [ "$runner" = "cfs" ]; then
-        short_label="${scen} (CFS, 20w, No Affinity)"
+        if [ "$workers" -eq 10 ]; then
+            short_label="${scen} (CFS, 10w)"
+        else
+            short_label="${scen} (CFS, 20w)"
+        fi
     elif [ "$runner" = "5b5l" ]; then
         short_label="${scen} (5B+5L, 10w)"
     else
