@@ -90,6 +90,88 @@ run_profiling: $(TARGETS)
 # Alias for run_profiling
 profiling: run_profiling
 
+# -------------------------------------------------------
+# gprof Flat Profile for SyncPilot-20W
+# Usage: make gprof_20w
+# Produces: $(GPROF_DIR)/gprof_thread20_flat.txt
+# -------------------------------------------------------
+gprof_20w: $(RESULTS_DIR)/fsrcnn_thread20
+	@echo "=== gprof profiling: SyncPilot-20W ==="
+	@mkdir -p $(OUTPUT_DIR) $(GPROF_DIR)
+	@echo "Running binary with 20 workers (gmon.out will be generated)..."
+	@cd $(SRC_DIR) && \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_thread20_gprof.yuv 20
+	@echo "Analyzing gmon.out..."
+	@if [ -f $(SRC_DIR)/gmon.out ]; then \
+		gprof $(RESULTS_DIR)/fsrcnn_thread20 $(SRC_DIR)/gmon.out \
+			-p > $(GPROF_DIR)/gprof_thread20_flat.txt && \
+		gprof $(RESULTS_DIR)/fsrcnn_thread20 $(SRC_DIR)/gmon.out \
+			-q > $(GPROF_DIR)/gprof_thread20_callgraph.txt && \
+		echo "gprof output saved to $(GPROF_DIR)/gprof_thread20_flat.txt" ; \
+	elif [ -f gmon.out ]; then \
+		gprof $(RESULTS_DIR)/fsrcnn_thread20 gmon.out \
+			-p > $(GPROF_DIR)/gprof_thread20_flat.txt && \
+		gprof $(RESULTS_DIR)/fsrcnn_thread20 gmon.out \
+			-q > $(GPROF_DIR)/gprof_thread20_callgraph.txt && \
+		echo "gprof output saved to $(GPROF_DIR)/gprof_thread20_flat.txt" ; \
+	else \
+		echo "ERROR: gmon.out not found. Make sure binary was compiled with -pg" ; \
+	fi
+
+# -------------------------------------------------------
+# Detailed IPC Degradation Analysis for SyncPilot-20W
+# Measures: stall cycles, branch misses, LLC misses, bus cycles
+# Usage: make ipc_analysis_20w
+# Produces: $(PERF_DIR)/ipc_analysis_thread20.txt
+# -------------------------------------------------------
+ipc_analysis_20w: $(RESULTS_DIR)/fsrcnn_thread20
+	@echo "=== IPC Degradation Analysis: SyncPilot-20W ==="
+	@mkdir -p $(OUTPUT_DIR) $(PERF_DIR)
+	@echo "--- Pass 1: Pipeline stall counters ---"
+	perf stat \
+		-e cycles,instructions,\
+arcpmu/stall_slot/,\
+arcpmu/stall_frontend/,\
+arcpmu/stall_backend/,\
+arcpmu/stall_backend_mem/ \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_ipc20_pass1.yuv 20 \
+		2>> $(PERF_DIR)/ipc_analysis_thread20.txt || \
+	perf stat \
+		-e cycles,instructions,\
+stalled-cycles-frontend,\
+stalled-cycles-backend,\
+branch-misses,\
+cache-misses \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_ipc20_pass1.yuv 20 \
+		2>> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "--- Pass 2: Memory bandwidth & LLC ---"
+	perf stat \
+		-e cycles,instructions,\
+L1-dcache-loads,L1-dcache-load-misses,\
+L1-dcache-stores,\
+LLC-loads,LLC-load-misses,\
+mem-loads,mem-stores \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_ipc20_pass2.yuv 20 \
+		2>> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "--- Pass 3: Context-switch & migration overhead ---"
+	perf stat \
+		-e cycles,instructions,\
+context-switches,cpu-migrations,\
+task-clock,\
+cpu-clock \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_ipc20_pass3.yuv 20 \
+		2>> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "IPC analysis saved to $(PERF_DIR)/ipc_analysis_thread20.txt"
+	@echo ""
+	@echo "=== QUICK SUMMARY ==="
+	@grep -E "insn per cycle|stall|miss|migration|switch" \
+		$(PERF_DIR)/ipc_analysis_thread20.txt || true
+
 # Run Analysis
 analyze:
 	@echo "Running scaling analysis..."
@@ -128,13 +210,15 @@ install:
 # Help
 help:
 	@echo "FSRCNN Profiling Suite - Available targets:"
-	@echo "  all       - Build all configurations (default)"
-	@echo "  clean     - Remove all build artifacts"
-	@echo "  profiling - Run full gprof + perf stat profiling"
-	@echo "  analyze   - Run scaling analysis"
-	@echo "  report    - Generate comprehensive analysis report"
-	@echo "  quick_test - Execute without profiling (fast)"
-	@echo "  install   - Install required tools"
-	@echo "  help      - Show this help message"
+	@echo "  all              - Build all configurations (default)"
+	@echo "  clean            - Remove all build artifacts"
+	@echo "  profiling        - Run full gprof + perf stat profiling"
+	@echo "  gprof_20w        - gprof flat profile for SyncPilot-20W"
+	@echo "  ipc_analysis_20w - Detailed IPC degradation analysis (20W)"
+	@echo "  analyze          - Run scaling analysis"
+	@echo "  report           - Generate comprehensive analysis report"
+	@echo "  quick_test       - Execute without profiling (fast)"
+	@echo "  install          - Install required tools"
+	@echo "  help             - Show this help message"
 
-.PHONY: all clean profiling analyze report quick_test install help
+.PHONY: all clean profiling gprof_20w ipc_analysis_20w analyze report quick_test install help
