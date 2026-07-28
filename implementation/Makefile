@@ -206,23 +206,14 @@ ipc_analysis_20w: $(RESULTS_DIR)/fsrcnn_thread20
 # CFS Baseline vs SyncPilot IC-RCE Performance Comparison
 #
 # Prinsip: binary yang SAMA, worker yang SAMA (20W), tapi:
-#   - CFS baseline : pthread_setaffinity_np di-no-op via LD_PRELOAD
-#                    → CFS Linux bebas memilih core mana saja
-#   - SyncPilot    : IC-RCE aktif, affinity ke Big/LITTLE sesuai profil
+#   - CFS baseline : SYNCPILOT_DISABLE_AFFINITY=1 (CFS Linux bebas memilih core)
+#   - SyncPilot    : IC-RCE aktif (affinity ke Big/LITTLE sesuai profil)
 #
-# Cara: buat no_affinity.so yang intercept setaffinity → jadi no-op
 # Usage: make cfs_comparison
 # -------------------------------------------------------
-NO_AFF_SRC = $(IMPLEMENTATION_DIR)/no_affinity.c
-NO_AFF_LIB = $(IMPLEMENTATION_DIR)/no_affinity.so
-CFS_LOG     = $(PERF_DIR)/cfs_comparison.txt
+CFS_LOG = $(PERF_DIR)/cfs_comparison.txt
 
-# Compile intercept library (no_affinity.c must exist in implementation dir)
-$(NO_AFF_LIB): $(NO_AFF_SRC)
-	gcc -shared -fPIC -o $(NO_AFF_LIB) $(NO_AFF_SRC)
-	@echo "Built: $(NO_AFF_LIB)"
-
-cfs_comparison: $(RESULTS_DIR)/fsrcnn_thread20 $(NO_AFF_LIB)
+cfs_comparison: $(RESULTS_DIR)/fsrcnn_thread20
 	@echo "======================================================="
 	@echo "  CFS vs SyncPilot IC-RCE: True Wall-clock Comparison"
 	@echo "======================================================="
@@ -233,11 +224,11 @@ cfs_comparison: $(RESULTS_DIR)/fsrcnn_thread20 $(NO_AFF_LIB)
 	@echo "Date: $$(date)" >> $(CFS_LOG)
 	@echo "Frames: 150" >> $(CFS_LOG)
 	@echo "" >> $(CFS_LOG)
-	@echo "--- Run 1: CFS murni (pthread_setaffinity_np = no-op via LD_PRELOAD) ---"
+	@echo "--- Run 1: CFS murni (SYNCPILOT_DISABLE_AFFINITY=1) ---"
 	@echo "=== Run 1: CFS baseline (IC-RCE affinity disabled) ===" >> $(CFS_LOG)
 	@echo "CFS bebas distribute 20 threads ke core mana pun tanpa hint"
 	@START=$$(date +%s%N); \
-		LD_PRELOAD=$(NO_AFF_LIB) \
+		SYNCPILOT_DISABLE_AFFINITY=1 \
 		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
 		$(OUTPUT_DIR)/out_cfs_noaffinity.yuv 20 2>/dev/null; \
 		END=$$(date +%s%N); \

@@ -344,7 +344,14 @@ int main(int argc, char *argv[]) {
     cfg.enable_calibration = 1; // Aktifkan Kalibrasi Awal (Ukur durasi per-layer pada frame 1)
 
 #ifdef __linux__
-    cfg.enable_affinity = 1;    // Aktifkan Core Pinning otomatis di Linux (Orange Pi 5 dll. secara Zero-Config)
+    cfg.enable_affinity = 1;    // Aktifkan Core Pinning otomatis di Linux
+    
+    // Override via environment variable (berguna untuk pengujian CFS murni)
+    char *disable_aff = getenv("SYNCPILOT_DISABLE_AFFINITY");
+    if (disable_aff && strcmp(disable_aff, "1") == 0) {
+        cfg.enable_affinity = 0;
+        printf("[INFO] SYNCPILOT_DISABLE_AFFINITY=1 terdeteksi. Core pinning (IC-RCE) DIMATIKAN.\n");
+    }
 #endif
 
     printf("Memulai Engine SyncPilot...\n");
