@@ -51,6 +51,7 @@ SCENARIOS=(
     "5B5L"
     "CFS10"
     "CFS20"
+    "NAIVE"
 )
 
 LABELS=(
@@ -64,14 +65,15 @@ LABELS=(
     "5B5L (SyncPilot, 10 workers, 5 Big + 5 Little)"
     "CFS-10W (SyncPilot, 10 workers, No Affinity)"
     "CFS-20W (SyncPilot, 20 workers, No Affinity)"
+    "NAIVE (Naive OpenMP 20W, Race Condition)"
 )
 
 # SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
-SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot 5b5l cfs cfs)
+SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot 5b5l cfs cfs naive)
 
-SCENARIO_WORKERS=(150 150 4 8 10 20 10 10 20)
+SCENARIO_WORKERS=(150 150 4 8 10 20 10 10 20 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1 1)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
@@ -130,6 +132,7 @@ echo "Using compiler: $CC"
 $CC -O3 -fopenmp -o "${SCRIPT_DIR}/fsrcnn_baseline" "${SCRIPT_DIR}/fsrcnn_baseline.c" -lm
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_serial" "${SCRIPT_DIR}/fsrcnn_serial.c" -lm
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_serial_little" "${SCRIPT_DIR}/fsrcnn_serial_little.c" -lm
+$CC -O3 -fopenmp -o "${SCRIPT_DIR}/fsrcnn_naive_openmp" "${SCRIPT_DIR}/fsrcnn_naive_openmp.c" -lm
 $CC -O3 -o "${SCRIPT_DIR}/fsrcnn_syncpilot" "${SCRIPT_DIR}/fsrcnn_syncpilot.c" "${SCRIPT_DIR}/../../framework/syncpilot.c" -lpthread -lm
 echo "Kompilasi selesai."
 echo ""
@@ -219,6 +222,8 @@ run_scenario() {
         SYNCPILOT_DISABLE_AFFINITY=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     elif [ "$runner" = "5b5l" ]; then
         SYNCPILOT_FORCE_5B5L=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
+    elif [ "$runner" = "naive" ]; then
+        OMP_NUM_THREADS="$workers" "${SCRIPT_DIR}/fsrcnn_naive_openmp" "$INPUT_PATH" "$output_file" "$TOTAL_FRAMES"
     else
         "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     fi
