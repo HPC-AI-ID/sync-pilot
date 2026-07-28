@@ -91,6 +91,35 @@ run_profiling: $(TARGETS)
 profiling: run_profiling
 
 # -------------------------------------------------------
+# gprof Flat Profile for SyncPilot-4W
+# Usage: make gprof_4w
+# Produces: $(GPROF_DIR)/gprof_thread4_flat.txt
+# -------------------------------------------------------
+gprof_4w: $(RESULTS_DIR)/fsrcnn_thread4
+	@echo "=== gprof profiling: SyncPilot-4W ==="
+	@mkdir -p $(OUTPUT_DIR) $(GPROF_DIR)
+	@echo "Running binary with 4 workers (gmon.out will be generated)..."
+	@cd $(SRC_DIR) && \
+		$(RESULTS_DIR)/fsrcnn_thread4 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_thread4_gprof.yuv 4
+	@echo "Analyzing gmon.out..."
+	@if [ -f $(SRC_DIR)/gmon.out ]; then \
+		gprof $(RESULTS_DIR)/fsrcnn_thread4 $(SRC_DIR)/gmon.out \
+			-p > $(GPROF_DIR)/gprof_thread4_flat.txt && \
+		gprof $(RESULTS_DIR)/fsrcnn_thread4 $(SRC_DIR)/gmon.out \
+			-q > $(GPROF_DIR)/gprof_thread4_callgraph.txt && \
+		echo "gprof 4W output saved to $(GPROF_DIR)/gprof_thread4_flat.txt" ; \
+	elif [ -f gmon.out ]; then \
+		gprof $(RESULTS_DIR)/fsrcnn_thread4 gmon.out \
+			-p > $(GPROF_DIR)/gprof_thread4_flat.txt && \
+		gprof $(RESULTS_DIR)/fsrcnn_thread4 gmon.out \
+			-q > $(GPROF_DIR)/gprof_thread4_callgraph.txt && \
+		echo "gprof 4W output saved to $(GPROF_DIR)/gprof_thread4_flat.txt" ; \
+	else \
+		echo "ERROR: gmon.out not found. Make sure binary was compiled with -pg" ; \
+	fi
+
+# -------------------------------------------------------
 # gprof Flat Profile for SyncPilot-20W
 # Usage: make gprof_20w
 # Produces: $(GPROF_DIR)/gprof_thread20_flat.txt
@@ -137,12 +166,27 @@ ipc_analysis_20w: $(RESULTS_DIR)/fsrcnn_thread20
 		2>> $(PERF_DIR)/ipc_analysis_thread20.txt
 	@echo "" >> $(PERF_DIR)/ipc_analysis_thread20.txt
 	@echo "--- Pass 2: ARM L1/L2 cache refill counters ---"
-	@echo "=== PASS 2: ARM Cache Counters ===" >> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "=== PASS 2: ARM L1/L2 Cache Counters ===" >> $(PERF_DIR)/ipc_analysis_thread20.txt
 	perf stat -e "armv8_pmuv3_1/l1d_cache/,armv8_pmuv3_1/l1d_cache_refill/,armv8_pmuv3_1/l2d_cache/,armv8_pmuv3_1/l2d_cache_refill/,armv8_pmuv3_1/bus_cycles/" \
 		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
 		$(OUTPUT_DIR)/out_ipc20_pass2.yuv 20 \
 		2>> $(PERF_DIR)/ipc_analysis_thread20.txt || \
 	echo "SKIP: ARM cache PMU events not available, try: perf list | grep armv8" \
+		>> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "" >> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "--- Pass 2b: ARM L3 (LLC/DSU) cache counters ---"
+	@echo "=== PASS 2b: ARM L3/LLC Cache Counters ===" >> $(PERF_DIR)/ipc_analysis_thread20.txt
+	@echo "# Note: cache-references/cache-misses (Pass 1) = L3/LLC on ARM" \
+		>> $(PERF_DIR)/ipc_analysis_thread20.txt
+	perf stat -e "armv8_pmuv3_1/l3d_cache/,armv8_pmuv3_1/l3d_cache_refill/" \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_ipc20_pass2b.yuv 20 \
+		2>> $(PERF_DIR)/ipc_analysis_thread20.txt || \
+	perf stat -e "armv8_pmuv3_1/l3d_cache_rd/,armv8_pmuv3_1/l3d_cache_refill_rd/" \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_ipc20_pass2b.yuv 20 \
+		2>> $(PERF_DIR)/ipc_analysis_thread20.txt || \
+	echo "SKIP: L3 PMU events not exposed on this kernel (check: perf list | grep l3)" \
 		>> $(PERF_DIR)/ipc_analysis_thread20.txt
 	@echo "" >> $(PERF_DIR)/ipc_analysis_thread20.txt
 	@echo "--- Pass 3: Branch misses & OS overhead ---"
@@ -155,8 +199,100 @@ ipc_analysis_20w: $(RESULTS_DIR)/fsrcnn_thread20
 	@echo "IPC analysis saved to $(PERF_DIR)/ipc_analysis_thread20.txt"
 	@echo ""
 	@echo "=== QUICK SUMMARY ==="
-	@grep -E "insn per cycle|refill|miss|migration|switch|branch" \
+	@grep -E "insn per cycle|l1d_cache|l2d_cache|l3d_cache|refill|miss|migration|switch|branch" \
 		$(PERF_DIR)/ipc_analysis_thread20.txt || true
+
+# -------------------------------------------------------
+# IPC Drop Proof: 4 Controlled Experiments
+#
+# PREREQUISITE: Tentukan CPU mana Big dan mana LITTLE dulu:
+#   cat /sys/devices/system/cpu/cpu*/cpu_capacity
+#   (nilai lebih besar = Big core)
+#
+# Usage:
+#   make ipc_proof_20w BIG_CPUS=10-19 LITTLE_CPUS=0-9
+#   (sesuaikan setelah lihat hasil EXP-1)
+#
+# Hipotesa yang diuji:
+#   H1: LITTLE core inclusion = penyebab utama IPC turun (bukan cache thrashing)
+#   H2: LITTLE inherent IPC lebih rendah dari Big secara arsitektur
+#   H3: Cross-cluster L3 contention ikut menurunkan Big core IPC
+# -------------------------------------------------------
+BIG_CPUS    ?= 10-19
+LITTLE_CPUS ?= 0-9
+PROOF_DIR    = $(PERF_DIR)/ipc_proof
+
+ipc_proof_20w: $(RESULTS_DIR)/fsrcnn_thread20 $(RESULTS_DIR)/fsrcnn_thread10
+	@echo "======================================================="
+	@echo "  IPC DROP PROOF: Controlled Experiments (SyncPilot)"
+	@echo "======================================================="
+	@mkdir -p $(PROOF_DIR) $(OUTPUT_DIR)
+	@rm -f $(PROOF_DIR)/*.txt
+	@echo "Big CPUs   : $(BIG_CPUS)"
+	@echo "LITTLE CPUs: $(LITTLE_CPUS)"
+	@echo ""
+	@echo "--- EXP-1: CPU Topology Detection ---"
+	@echo "=== EXP-1: CPU Topology ===" > $(PROOF_DIR)/exp1_topology.txt
+	@echo "cpu_capacity (lebih besar = Big core):" >> $(PROOF_DIR)/exp1_topology.txt
+	@for i in $$(seq 0 19); do \
+		cap=$$(cat /sys/devices/system/cpu/cpu$$i/cpu_capacity 2>/dev/null || echo "N/A"); \
+		echo "  cpu$$i: $$cap" >> $(PROOF_DIR)/exp1_topology.txt; \
+	done
+	@echo "cluster_id per CPU:" >> $(PROOF_DIR)/exp1_topology.txt
+	@for i in $$(seq 0 19); do \
+		cid=$$(cat /sys/devices/system/cpu/cpu$$i/topology/cluster_id 2>/dev/null || echo "N/A"); \
+		echo "  cpu$$i: cluster $$cid" >> $(PROOF_DIR)/exp1_topology.txt; \
+	done
+	@cat $(PROOF_DIR)/exp1_topology.txt
+	@echo ""
+	@echo "--- EXP-2: 20W pinned ke Big cores saja (taskset -c $(BIG_CPUS)) ---"
+	@echo "Jika IPC ~ 3.6 = LITTLE-inclusion adalah penyebab IPC turun (H1 terbukti)"
+	@echo "=== EXP-2: 20W Big-only ===" > $(PROOF_DIR)/exp2_20w_bigonly.txt
+	perf stat -e "cycles,instructions,cache-references,cache-misses" \
+		taskset -c $(BIG_CPUS) \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_proof_exp2.yuv 20 \
+		2>> $(PROOF_DIR)/exp2_20w_bigonly.txt
+	@echo "EXP-2 IPC:"; grep "insn per cycle" $(PROOF_DIR)/exp2_20w_bigonly.txt || true
+	@echo ""
+	@echo "--- EXP-3: 10W pinned ke LITTLE cores saja (taskset -c $(LITTLE_CPUS)) ---"
+	@echo "Mengukur inherent LITTLE IPC tanpa Big core interference (H2)"
+	@echo "=== EXP-3: 10W LITTLE-only ===" > $(PROOF_DIR)/exp3_10w_littleonly.txt
+	perf stat -e "cycles,instructions,cache-references,cache-misses" \
+		taskset -c $(LITTLE_CPUS) \
+		$(RESULTS_DIR)/fsrcnn_thread10 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_proof_exp3.yuv 10 \
+		2>> $(PROOF_DIR)/exp3_10w_littleonly.txt
+	@echo "EXP-3 IPC:"; grep "insn per cycle" $(PROOF_DIR)/exp3_10w_littleonly.txt || true
+	@echo ""
+	@echo "--- EXP-4: Monitor Big IPC saja saat 20W jalan (perf -C $(BIG_CPUS)) ---"
+	@echo "Jika Big IPC turun vs EXP-2 = LITTLE thrash L3 (H3 terbukti)"
+	@echo "Jika Big IPC sama = L3 contention tidak terbukti"
+	@echo "=== EXP-4: Big core IPC saat 20W+LITTLE aktif ===" \
+		> $(PROOF_DIR)/exp4_big_during_20w.txt
+	perf stat -C $(BIG_CPUS) \
+		-e "cycles,instructions,cache-references,cache-misses" \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_proof_exp4.yuv 20 \
+		2>> $(PROOF_DIR)/exp4_big_during_20w.txt
+	@echo "EXP-4 IPC:"; grep "insn per cycle" $(PROOF_DIR)/exp4_big_during_20w.txt || true
+	@echo ""
+	@echo "======================================================="
+	@echo "  RINGKASAN PEMBUKTIAN"
+	@echo "======================================================="
+	@echo "EXP-2 (20W Big-only)             :"; \
+		grep "insn per cycle" $(PROOF_DIR)/exp2_20w_bigonly.txt | head -1 || echo "  (tidak ada data)"
+	@echo "EXP-3 (10W LITTLE-only)           :"; \
+		grep "insn per cycle" $(PROOF_DIR)/exp3_10w_littleonly.txt | head -1 || echo "  (tidak ada data)"
+	@echo "EXP-4 (Big IPC saat 20W+LITTLE)  :"; \
+		grep "insn per cycle" $(PROOF_DIR)/exp4_big_during_20w.txt | head -1 || echo "  (tidak ada data)"
+	@echo ""
+	@echo "Interpretasi:"
+	@echo "  EXP-2 IPC ~ 3.6 → H1 TERBUKTI: LITTLE inclusion = penyebab utama"
+	@echo "  EXP-3 IPC ~ 2.x → H2 TERBUKTI: LITTLE inherent IPC lebih rendah"
+	@echo "  EXP-4 IPC < EXP-2 IPC → H3 TERBUKTI: L3 contention dari LITTLE"
+	@echo "  EXP-4 IPC = EXP-2 IPC → H3 TIDAK terbukti: L3 contention bukan faktor"
+	@echo "Semua hasil di: $(PROOF_DIR)/"
 
 # Run Analysis
 analyze:
@@ -199,12 +335,16 @@ help:
 	@echo "  all              - Build all configurations (default)"
 	@echo "  clean            - Remove all build artifacts"
 	@echo "  profiling        - Run full gprof + perf stat profiling"
+	@echo "  gprof_4w         - gprof flat profile for SyncPilot-4W (fresh)"
 	@echo "  gprof_20w        - gprof flat profile for SyncPilot-20W"
 	@echo "  ipc_analysis_20w - Detailed IPC degradation analysis (20W)"
+	@echo "  ipc_proof_20w    - 4 controlled experiments to PROVE IPC drop cause"
+	@echo "                     (default: BIG_CPUS=10-19 LITTLE_CPUS=0-9)"
+	@echo "                     (run EXP-1 first to verify CPU topology!)"
 	@echo "  analyze          - Run scaling analysis"
 	@echo "  report           - Generate comprehensive analysis report"
 	@echo "  quick_test       - Execute without profiling (fast)"
 	@echo "  install          - Install required tools"
 	@echo "  help             - Show this help message"
 
-.PHONY: all clean profiling gprof_20w ipc_analysis_20w analyze report quick_test install help
+.PHONY: all clean profiling gprof_4w gprof_20w ipc_analysis_20w ipc_proof_20w analyze report quick_test install help
