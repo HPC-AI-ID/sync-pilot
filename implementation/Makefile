@@ -203,7 +203,72 @@ ipc_analysis_20w: $(RESULTS_DIR)/fsrcnn_thread20
 		$(PERF_DIR)/ipc_analysis_thread20.txt || true
 
 # -------------------------------------------------------
-# IPC Drop Proof: 4 Controlled Experiments
+# CFS Baseline vs SyncPilot IC-RCE Performance Comparison
+#
+# Prinsip: binary yang SAMA, worker yang SAMA (20W), tapi:
+#   - CFS baseline : pthread_setaffinity_np di-no-op via LD_PRELOAD
+#                    → CFS Linux bebas memilih core mana saja
+#   - SyncPilot    : IC-RCE aktif, affinity ke Big/LITTLE sesuai profil
+#
+# Cara: buat no_affinity.so yang intercept setaffinity → jadi no-op
+# Usage: make cfs_comparison
+# -------------------------------------------------------
+NO_AFF_SRC = $(IMPLEMENTATION_DIR)/no_affinity.c
+NO_AFF_LIB = $(IMPLEMENTATION_DIR)/no_affinity.so
+CFS_LOG     = $(PERF_DIR)/cfs_comparison.txt
+
+# Compile intercept library (no_affinity.c must exist in implementation dir)
+$(NO_AFF_LIB): $(NO_AFF_SRC)
+	gcc -shared -fPIC -o $(NO_AFF_LIB) $(NO_AFF_SRC)
+	@echo "Built: $(NO_AFF_LIB)"
+
+cfs_comparison: $(RESULTS_DIR)/fsrcnn_thread20 $(NO_AFF_LIB)
+	@echo "======================================================="
+	@echo "  CFS vs SyncPilot IC-RCE: True Wall-clock Comparison"
+	@echo "======================================================="
+	@echo "Prinsip: binary sama, 20W, bedanya IC-RCE aktif vs tidak"
+	@mkdir -p $(OUTPUT_DIR) $(PERF_DIR)
+	@rm -f $(CFS_LOG)
+	@echo "=== CFS vs SyncPilot IC-RCE Comparison ===" > $(CFS_LOG)
+	@echo "Date: $$(date)" >> $(CFS_LOG)
+	@echo "Frames: 150" >> $(CFS_LOG)
+	@echo "" >> $(CFS_LOG)
+	@echo "--- Run 1: CFS murni (pthread_setaffinity_np = no-op via LD_PRELOAD) ---"
+	@echo "=== Run 1: CFS baseline (IC-RCE affinity disabled) ===" >> $(CFS_LOG)
+	@echo "CFS bebas distribute 20 threads ke core mana pun tanpa hint"
+	@START=$$(date +%s%N); \
+		LD_PRELOAD=$(NO_AFF_LIB) \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_cfs_noaffinity.yuv 20 2>/dev/null; \
+		END=$$(date +%s%N); \
+		MS=$$(( ($$END - $$START) / 1000000 )); \
+		FPS=$$(echo "scale=2; 150 * 1000 / $$MS" | bc 2>/dev/null || echo "N/A"); \
+		SPEEDUP=$$(echo "scale=2; 10445 / $$MS" | bc 2>/dev/null || echo "N/A"); \
+		echo "  Time    : $${MS} ms" | tee -a $(CFS_LOG); \
+		echo "  FPS     : $${FPS}" | tee -a $(CFS_LOG); \
+		echo "  Speedup : $${SPEEDUP}x (vs serial 10445ms)" | tee -a $(CFS_LOG)
+	@echo "" >> $(CFS_LOG)
+	@echo "--- Run 2: SyncPilot IC-RCE aktif (our contribution) ---"
+	@echo "=== Run 2: SyncPilot IC-RCE (affinity aktif) ===" >> $(CFS_LOG)
+	@echo "IC-RCE profiles dan routing heavy stages ke Big cores"
+	@START=$$(date +%s%N); \
+		$(RESULTS_DIR)/fsrcnn_thread20 $(INPUT_YUV) \
+		$(OUTPUT_DIR)/out_cfs_syncpilot.yuv 20 2>/dev/null; \
+		END=$$(date +%s%N); \
+		MS=$$(( ($$END - $$START) / 1000000 )); \
+		FPS=$$(echo "scale=2; 150 * 1000 / $$MS" | bc 2>/dev/null || echo "N/A"); \
+		SPEEDUP=$$(echo "scale=2; 10445 / $$MS" | bc 2>/dev/null || echo "N/A"); \
+		echo "  Time    : $${MS} ms" | tee -a $(CFS_LOG); \
+		echo "  FPS     : $${FPS}" | tee -a $(CFS_LOG); \
+		echo "  Speedup : $${SPEEDUP}x (vs serial 10445ms)" | tee -a $(CFS_LOG)
+	@echo ""
+	@echo "======================================================="
+	@echo "  RINGKASAN"
+	@echo "======================================================="
+	@grep -E "Time|FPS|Speedup" $(CFS_LOG) | grep -v "==" || true
+	@echo "Full log: $(CFS_LOG)"
+
+
 #
 # PREREQUISITE: Tentukan CPU mana Big dan mana LITTLE dulu:
 #   cat /sys/devices/system/cpu/cpu*/cpu_capacity
@@ -339,6 +404,7 @@ help:
 	@echo "  gprof_20w        - gprof flat profile for SyncPilot-20W"
 	@echo "  ipc_analysis_20w - Detailed IPC degradation analysis (20W)"
 	@echo "  ipc_proof_20w    - 4 controlled experiments to PROVE IPC drop cause"
+	@echo "  cfs_comparison   - CFS LITTLE/Big vs SyncPilot IC-RCE wall-clock"
 	@echo "                     (default: BIG_CPUS=10-19 LITTLE_CPUS=0-9)"
 	@echo "                     (run EXP-1 first to verify CPU topology!)"
 	@echo "  analyze          - Run scaling analysis"
@@ -347,4 +413,4 @@ help:
 	@echo "  install          - Install required tools"
 	@echo "  help             - Show this help message"
 
-.PHONY: all clean profiling gprof_10w gprof_20w ipc_analysis_20w ipc_proof_20w analyze report quick_test install help
+.PHONY: all clean profiling gprof_10w gprof_20w ipc_analysis_20w ipc_proof_20w cfs_comparison analyze report quick_test install help
