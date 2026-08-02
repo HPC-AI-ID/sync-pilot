@@ -1,0 +1,15 @@
+# Skenario Time_ms Throughput_fps
+"SER (Serial, big core)" 10288 14.58
+"LIT (Serial, little core)" 18971 7.91
+"A (SyncPilot, 4w)" 3026 49.57
+"B (SyncPilot, 8w)" 1583 94.76
+"C (SyncPilot, 10w)" 1340 111.94
+"D (SyncPilot, 20w)" 1123 133.57
+"5B5L (5B+5L, 10w)" 2115 70.92
+"CFS10 (CFS, 10w)" 1332 112.61
+"CFS20 (CFS, 20w)" 1039 144.37
+"NAIVE (SyncPilot, 20w)" 6182 24.26
+"D_NOISE (SyncPilot, 20w)" 1219 123.05
+"CFS20_NOISE (CFS, 20w)" 1275 117.65
+"D_NOISE_BRUTAL (SyncPilot, 20w)" 1403 106.91
+"CFS20_NOISE_BRUTAL (CFS, 20w)" 1735 86.46
