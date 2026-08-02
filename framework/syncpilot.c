@@ -120,7 +120,8 @@ static int stage_matches_worker_preference_locked(PipelineEngine *engine, int st
                 // Mode Steal (Work-Conserving Idle):
                 // LITTLE core diizinkan mengambil task berat (membantu Big core)
                 // Big core tetap dilarang mengambil task ringan agar cache fokus ke task berat
-                if (core_class == 1 && !is_heavy) return 0; 
+                // if (core_class == 1 && !is_heavy) return 0; 
+                return 1;
             }
         }
     }
@@ -504,12 +505,14 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
             }
         }
 
+        int n_big_w = 0, n_lit_w = 0;
         for (int i = 0; i < c->num_workers && i < MAX_CORES; i++) {
-            if (num_big > 0 && i < num_big) {
-                worker_core_classes[i] = 1;
-            } else if (num_little > 0) {
-                worker_core_classes[i] = 0;
-            }
+            if (worker_core_classes[i] == 1) n_big_w++;
+            else if (worker_core_classes[i] == 0) n_lit_w++;
+        }
+        if (n_big_w == 0 || n_lit_w == 0) {
+            eng->config.enable_two_pool = 0;
+            printf("[INFO] two_pool dinonaktifkan: hanya satu kelas core (%dB/%dL).\n", n_big_w, n_lit_w);
         }
     }
 #endif

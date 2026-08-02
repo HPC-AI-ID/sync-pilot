@@ -357,12 +357,12 @@ int main(int argc, char *argv[]) {
     char *force_5b5l = getenv("SYNCPILOT_FORCE_5B5L");
     if (force_5b5l && strcmp(force_5b5l, "1") == 0) {
         // ASUS GX10 Topology:
-        // Big (10 cores): 6, 7, 8, 9, 10, 15, 16, 17, 18, 19
-        // LITTLE (10 cores): 0, 1, 2, 3, 4, 5, 11, 12, 13, 14
+        // Big (10 cores): 5, 6, 7, 8, 9, 15, 16, 17, 18, 19
+        // LITTLE (10 cores): 0, 1, 2, 3, 4, 10, 11, 12, 13, 14
         cfg.num_big_cores = 5;
         cfg.num_little_cores = 5;
         
-        int b_cores[] = {6, 7, 8, 9, 10};
+        int b_cores[] = {5, 6, 7, 8, 9};
         int l_cores[] = {0, 1, 2, 3, 4};
         
         for (int i=0; i<5; i++) {
