@@ -59,6 +59,9 @@ LABELS=(
 # SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
 SCENARIO_RUNNERS=(serial syncpilot cfs syncpilot cfs)
 
+# Catatan: nilai 150 di posisi SER tidak dipakai oleh run_scenario() untuk
+# runner "serial" (selalu memakai $TOTAL_FRAMES, bukan $workers) — jangan baca
+# kolom Speedup baris SER seolah itu jumlah worker.
 SCENARIO_WORKERS=(150 20 20 20 20)
 
 SCENARIO_INNER_THREADS=(1 1 1 1 1)
@@ -212,14 +215,21 @@ run_scenario() {
     elif [ "$runner" = "5b5l" ]; then
         SYNCPILOT_FORCE_5B5L=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     elif [ "$runner" = "naive" ]; then
-        OMP_NUM_THREADS="$workers" "${SCRIPT_DIR}/fsrcnn_naive_openmp" "$INPUT_PATH" "$output_file" "$TOTAL_FRAMES"
+        OMP_NUM_THREADS="$workers" "${SCRIPT_DIR}/fsrcnn_naive_openmp" "$INPUT_PATH" "$output_file" "$TOTAL_FRAMES" > /dev/null 2>&1
     else
         "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     fi
 }
 
 # ===================== GROUND TRUTH GENERATION =====================
-GROUND_TRUTH="${SCRIPT_DIR}/output_baseline_ground_truth.yuv"
+# PENTING: ground truth dibuat dari fsrcnn_serial (single-thread, deterministik),
+# BUKAN dari fsrcnn_baseline (OpenMP paralel). Memakai ground truth OpenMP untuk
+# membuktikan "bebas race condition OpenMP" adalah argumen sirkular. Nama file
+# sengaja diganti (bukan output_baseline_ground_truth.yuv) supaya cache lama yang
+# dihasilkan fsrcnn_baseline tidak pernah terpakai ulang secara diam-diam.
+# Catatan: file ini dipakai bersama oleh comparison_new.sh dan comparison_noise.sh
+# (isinya identik untuk input yang sama), jadi keduanya bisa saling memakai cache ini.
+GROUND_TRUTH="${SCRIPT_DIR}/output_serial_ground_truth.yuv"
 print_no_photo_phase "pembuatan ground truth pembanding"
 
 if [ -f "$GROUND_TRUTH" ]; then
@@ -235,9 +245,9 @@ else
     if [ "$ground_truth_size" -gt 0 ]; then
         echo ">> Ground truth cache tidak valid (${ground_truth_size} bytes, expected ${EXPECTED_OUTPUT_SIZE}), membuat ulang..."
     else
-        echo ">> Membuat ground truth dari Baseline (fsrcnn_baseline)..."
+        echo ">> Membuat ground truth dari fsrcnn_serial (deterministik, single-thread)..."
     fi
-    "${SCRIPT_DIR}/fsrcnn_baseline" "$INPUT_PATH" "$GROUND_TRUTH" > /dev/null 2>&1
+    "${SCRIPT_DIR}/fsrcnn_serial" "$INPUT_PATH" "$GROUND_TRUTH" "$TOTAL_FRAMES" > /dev/null 2>&1
     echo "   Ground truth selesai: $(du -h "$GROUND_TRUTH" | awk '{print $1}')"
 fi
 echo ""
@@ -251,8 +261,15 @@ echo ""
 declare -a TIMES_AVG
 declare -a TIMES_MIN
 declare -a TIMES_MAX
+declare -a TIMES_STDDEV
+declare -a TIMES_FIRSTRUN
 declare -a OUTPUT_SIZES
 declare -a OUTPUT_FILES
+
+# Semua timing mentah (termasuk run 1/cold-start) disimpan di CSV terpisah per
+# skenario, supaya bisa diaudit ulang tanpa harus mengulang benchmark.
+RAW_CSV="${SCRIPT_DIR}/raw_timings_noise.csv"
+echo "scenario,run,elapsed_ms,excluded_from_avg" > "$RAW_CSV"
 
 for i in "${!SCENARIOS[@]}"; do
     scen="${SCENARIOS[$i]}"
@@ -288,6 +305,8 @@ for i in "${!SCENARIOS[@]}"; do
     total_time=0
     min_time=999999999
     max_time=0
+    first_run_time=0
+    declare -a steady_runs=()
 
     # START NOISE IF REQUIRED
     NOISE_PID=""
@@ -300,10 +319,19 @@ for i in "${!SCENARIOS[@]}"; do
         "${SCRIPT_DIR}/noise_generator" $NOISE_THREADS > /dev/null 2>&1 &
         NOISE_PID=$!
         sleep 2
+        if ! ps -p "$NOISE_PID" > /dev/null 2>&1; then
+            echo "     [ERROR] noise_generator (PID $NOISE_PID) sudah mati sebelum benchmark mulai!" >&2
+            echo "             Skenario ini TIDAK VALID sebagai pengukuran noise. Periksa noise_generator.c." >&2
+        fi
     fi
 
     for ((run=1; run<=NUM_RUNS; run++)); do
         rm -f "$output_file"
+
+        # Verifikasi noise generator masih hidup di setiap run, bukan hanya di awal
+        if [[ -n "$NOISE_PID" ]] && ! ps -p "$NOISE_PID" > /dev/null 2>&1; then
+            echo "     [ERROR] noise_generator (PID $NOISE_PID) mati sebelum run ${run}/${NUM_RUNS}! Sisa run TIDAK dinaungi noise." >&2
+        fi
 
         print_photo_start "$label" "$run" "$NUM_RUNS"
         start_time=$(get_time_ms)
@@ -311,40 +339,57 @@ for i in "${!SCENARIOS[@]}"; do
         end_time=$(get_time_ms)
 
         elapsed=$((end_time - start_time))
-        total_time=$((total_time + elapsed))
-        [ $elapsed -lt $min_time ] && min_time=$elapsed
-        [ $elapsed -gt $max_time ] && max_time=$elapsed
         print_photo_end "$label" "$run" "$elapsed"
 
         if [ "$run" -eq 1 ]; then
-            printf "     Run %d/%d (Profil): %d ms\n" "$run" "$NUM_RUNS" "$elapsed"
+            first_run_time=$elapsed
+            echo "${scen},${run},${elapsed},yes" >> "$RAW_CSV"
+            printf "     Run %d/%d (Profil/Cold-Start, DIKECUALIKAN dari rata-rata): %d ms\n" "$run" "$NUM_RUNS" "$elapsed"
         else
-            printf "     Run %d/%d (Normal): %d ms\n" "$run" "$NUM_RUNS" "$elapsed"
+            total_time=$((total_time + elapsed))
+            steady_runs+=("$elapsed")
+            [ $elapsed -lt $min_time ] && min_time=$elapsed
+            [ $elapsed -gt $max_time ] && max_time=$elapsed
+            echo "${scen},${run},${elapsed},no" >> "$RAW_CSV"
+            printf "     Run %d/%d (Steady-State): %d ms\n" "$run" "$NUM_RUNS" "$elapsed"
         fi
     done
-    
-    # STOP NOISE IF RUNNING
+
+    # STOP NOISE IF RUNNING (matikan proses utama + jaga-jaga thread/proses OpenMP sisa)
     if [[ -n "$NOISE_PID" ]]; then
         echo "     [!] Mematikan System Noise Generator..."
-        kill -9 $NOISE_PID 2>/dev/null || true
+        kill -9 "$NOISE_PID" 2>/dev/null || true
+        wait "$NOISE_PID" 2>/dev/null || true
+        pkill -9 -f "${SCRIPT_DIR}/noise_generator" 2>/dev/null || true
     fi
 
-    # Hitung rata-rata
-    avg_time=$((total_time / NUM_RUNS))
+    # Hitung rata-rata/min/max/std dev HANYA dari run steady-state (run 1 dibuang)
+    STEADY_COUNT=$((NUM_RUNS - 1))
+    avg_time=$((total_time / STEADY_COUNT))
     TIMES_AVG[$i]=$avg_time
     TIMES_MIN[$i]=$min_time
     TIMES_MAX[$i]=$max_time
-    
+    TIMES_FIRSTRUN[$i]=$first_run_time
+    TIMES_STDDEV[$i]=$(printf '%s\n' "${steady_runs[@]}" | awk -v avg="$avg_time" '{s+=($1-avg)^2; n++} END {if(n>0) printf "%.1f", sqrt(s/n); else print "0.0"}')
+
     # Ukuran output
     if [ -f "$output_file" ]; then
         OUTPUT_SIZES[$i]=$(get_file_size "$output_file")
     else
         OUTPUT_SIZES[$i]=0
     fi
-    
+
     echo ""
-    printf "     Rata-rata : %d ms\n" "$avg_time"
+    printf "     Rata-rata (steady-state, n=%d) : %d ms  (StdDev: %s ms, Cold-Start Run1: %d ms)\n" \
+        "$STEADY_COUNT" "$avg_time" "${TIMES_STDDEV[$i]}" "$first_run_time"
     echo ""
+
+    # Cooldown antar skenario supaya efek thermal/cache satu skenario tidak
+    # bocor ke skenario berikutnya.
+    if [ "$i" -lt "$((${#SCENARIOS[@]} - 1))" ]; then
+        echo "     [...] Cooldown 10 detik sebelum skenario berikutnya..."
+        sleep 10
+    fi
 done
 
 # ===================== MENGHITUNG PSNR =====================
@@ -373,21 +418,26 @@ echo "==========================================================================
 echo ""
 
 # Header tabel
-printf "%-30s | %10s | %10s | %10s | %15s | %10s\n" \
-    "Skenario" "Avg (ms)" "Min (ms)" "Max (ms)" "Throughput(fps)" "PSNR (dB)"
-printf "%-30s-+-%10s-+-%10s-+-%10s-+-%15s-+-%10s\n" \
-    "------------------------------" "----------" "----------" "----------" "---------------" "----------"
+# Catatan: Avg/Min/Max/StdDev dihitung dari 7 run steady-state saja (run 1
+# dikecualikan sebagai cold-start/profiling run). Cold-Start = waktu run 1
+# apa adanya, ditampilkan terpisah untuk transparansi, BUKAN bagian dari rata-rata.
+printf "%-30s | %10s | %10s | %10s | %9s | %11s | %15s | %10s\n" \
+    "Skenario" "Avg (ms)" "Min (ms)" "Max (ms)" "StdDev" "Cold-Start" "Throughput(fps)" "PSNR (dB)"
+printf "%-30s-+-%10s-+-%10s-+-%10s-+-%9s-+-%11s-+-%15s-+-%10s\n" \
+    "------------------------------" "----------" "----------" "----------" "---------" "-----------" "---------------" "----------"
 
 for i in "${!SCENARIOS[@]}"; do
     label="${LABELS[$i]}"
     avg=${TIMES_AVG[$i]}
     throughput=$(awk "BEGIN {printf \"%.2f\", ($TOTAL_FRAMES * 1000) / $avg}")
-    
-    printf "%-30s | %10d | %10d | %10d | %15s | %10s\n" \
+
+    printf "%-30s | %10d | %10d | %10d | %9s | %11d | %15s | %10s\n" \
         "${label}" \
         "${TIMES_AVG[$i]}" \
         "${TIMES_MIN[$i]}" \
         "${TIMES_MAX[$i]}" \
+        "${TIMES_STDDEV[$i]}" \
+        "${TIMES_FIRSTRUN[$i]}" \
         "${throughput}" \
         "${PSNR_VALUES[$i]}"
 done
@@ -476,7 +526,7 @@ echo "                  MENULIS DATA & MEMBUAT GRAFIK (GNUPLOT)"
 echo "============================================================================="
 print_no_photo_phase "menulis data dan membuat grafik"
 echo ""
-DAT_FILE="${SCRIPT_DIR}/benchmark_data.dat"
+DAT_FILE="${SCRIPT_DIR}/benchmark_data_noise.dat"
 echo "# Skenario Time_ms Throughput_fps" > "$DAT_FILE"
 
 for i in "${!SCENARIOS[@]}"; do
@@ -516,12 +566,16 @@ echo "  [✓] File data gnuplot berhasil diperbarui di: $DAT_FILE"
 if command -v gnuplot &> /dev/null; then
     # Masuk ke folder script agar gambar output tersimpan di sana
     cd "$SCRIPT_DIR"
-    gnuplot plot_results.gp
-    echo "  [✓] Grafik throughput (fsrcnn_throughput.png) dan waktu (fsrcnn_time.png) berhasil digenerate!"
+    gnuplot -e "datafile='${DAT_FILE}'; out_throughput='${SCRIPT_DIR}/fsrcnn_throughput_noise.png'; out_time='${SCRIPT_DIR}/fsrcnn_time_noise.png'" plot_results.gp
+    echo "  [✓] Grafik throughput (fsrcnn_throughput_noise.png) dan waktu (fsrcnn_time_noise.png) berhasil digenerate!"
 else
     echo "  [!] WARNING: gnuplot tidak ditemukan di sistem Anda."
     echo "      Silakan install gnuplot atau jalankan secara manual menggunakan file plot_results.gp"
 fi
+echo ""
+
+echo "  Data mentah (semua run termasuk cold-start) tersimpan di: ${RAW_CSV}"
+echo "  Data agregat (untuk gnuplot) tersimpan di: ${DAT_FILE}"
 echo ""
 
 echo "============================================================================="

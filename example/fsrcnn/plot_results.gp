@@ -1,8 +1,17 @@
 # Gnuplot script to plot FSRCNN comparison results
+#
+# Variables can be overridden so multiple comparison scripts don't clobber
+# each other's output, e.g.:
+#   gnuplot -e "datafile='benchmark_data_noise.dat'; out_throughput='fsrcnn_throughput_noise.png'; out_time='fsrcnn_time_noise.png'" plot_results.gp
+# Falls back to the original filenames if called without -e (backward compatible).
+
+if (!exists("datafile")) datafile = 'benchmark_data.dat'
+if (!exists("out_throughput")) out_throughput = 'fsrcnn_throughput.png'
+if (!exists("out_time")) out_time = 'fsrcnn_time.png'
 
 # Output configuration for Throughput
 set terminal pngcairo size 800,600 enhanced font 'Helvetica,11'
-set output 'fsrcnn_throughput.png'
+set output out_throughput
 
 # Styling
 set style fill solid 0.8 border -1
@@ -24,15 +33,15 @@ set ytics font 'Helvetica,10'
 unset key
 
 # Plotting Throughput (column 3)
-plot 'benchmark_data.dat' using 0:3:xtic(1) with boxes lc rgb "#1f77b4", \
-     'benchmark_data.dat' using 0:3:3 with labels center offset 0,1 font 'Helvetica-Bold,10' textcolor rgb "#333333"
+plot datafile using 0:3:xtic(1) with boxes lc rgb "#1f77b4", \
+     datafile using 0:3:3 with labels center offset 0,1 font 'Helvetica-Bold,10' textcolor rgb "#333333"
 
 # Output configuration for Execution Time
-set output 'fsrcnn_time.png'
+set output out_time
 set ylabel "Execution Time (ms)" font 'Helvetica-Bold,12'
 set title "FSRCNN Average Execution Time Comparison\n(Lebih rendah lebih baik)" font 'Helvetica-Bold,14'
 unset yrange
 
 # Plotting Execution Time (column 2)
-plot 'benchmark_data.dat' using 0:2:xtic(1) with boxes lc rgb "#d62728", \
-     'benchmark_data.dat' using 0:2:2 with labels center offset 0,1 font 'Helvetica-Bold,10' textcolor rgb "#333333"
+plot datafile using 0:2:xtic(1) with boxes lc rgb "#d62728", \
+     datafile using 0:2:2 with labels center offset 0,1 font 'Helvetica-Bold,10' textcolor rgb "#333333"
