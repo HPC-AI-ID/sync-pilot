@@ -577,24 +577,32 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
 
 
 void pipeline_feed(PipelineEngine *engine, int id, void *raw_data) {
-    PipelineTask *t = malloc(sizeof(PipelineTask));
-    t->task_id = id; t->current_stage = 0; t->data = raw_data;
+     PipelineTask *t = (PipelineTask*)malloc(sizeof(PipelineTask));
+     t->task_id = id;
+     t->current_stage = 0;
+     t->data = raw_data;
 
-    while (1) {
-        pthread_mutex_lock(&engine->lock);      // urutan konsisten: engine dulu
-        StageQueue *sq = &engine->stage_qs[0];
-        pthread_mutex_lock(&sq->lock);
-        int pushed = sq_push(sq, t);
-        pthread_mutex_unlock(&sq->lock);
+     // Push ke gerbang tol tahapan awal (Stage-0), Push ini blocking via Cond klo antrian penuh. 
+     while(1) {
+         StageQueue *sq = &engine->stage_qs[0];
+         pthread_mutex_lock(&sq->lock);
+         int pushed = sq_push(sq, t);
+         if (!pushed) {
+             pthread_mutex_lock(&engine->lock);
+         }
+         pthread_mutex_unlock(&sq->lock);
 
-        if (pushed) {
-            signal_work_locked(engine);
-            pthread_mutex_unlock(&engine->lock);
-            return;
-        }
-        pthread_cond_wait(&engine->cond_space, &engine->lock);
-        pthread_mutex_unlock(&engine->lock);
-    }
+         if (pushed) {
+             break;
+         }
+
+         pthread_cond_wait(&engine->cond_space, &engine->lock);
+         pthread_mutex_unlock(&engine->lock);
+     }
+
+     pthread_mutex_lock(&engine->lock);
+     signal_work_locked(engine);
+     pthread_mutex_unlock(&engine->lock);
 }
 
 
