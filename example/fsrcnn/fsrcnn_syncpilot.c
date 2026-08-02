@@ -344,6 +344,15 @@ int main(int argc, char *argv[]) {
     cfg.enable_calibration = 1; // Aktifkan Kalibrasi Awal (Ukur durasi per-layer pada frame 1)
     cfg.enable_two_pool = 1;    // Pisahkan preferensi big/little worker berdasarkan IC-RCE
 
+    // Override via environment variable: ablasi cost-gating IC-RCE.
+    // Affinity/pinning tetap aktif, hanya routing per-stage (heavy->Big,
+    // light->LITTLE) yang dimatikan, sehingga worker mengambil task apa pun.
+    char *no_two_pool = getenv("SYNCPILOT_DISABLE_TWOPOOL");
+    if (no_two_pool && strcmp(no_two_pool, "1") == 0) {
+        cfg.enable_two_pool = 0;
+        printf("[INFO] SYNCPILOT_DISABLE_TWOPOOL=1 terdeteksi. Cost-gating (two-pool) DIMATIKAN.\n");
+    }
+
 #ifdef __linux__
     cfg.enable_affinity = 1;    // Aktifkan Core Pinning otomatis di Linux
     

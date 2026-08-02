@@ -48,6 +48,7 @@ SCENARIOS=(
     "B"
     "C"
     "D"
+    "D_NOTP"
     "5B5L"
     "CFS10"
     "CFS20"
@@ -56,6 +57,7 @@ SCENARIOS=(
     "CFS20_NOISE"
     "D_NOISE_BRUTAL"
     "CFS20_NOISE_BRUTAL"
+    "D_NOTP_NOISE_BRUTAL"
 )
 
 LABELS=(
@@ -66,6 +68,7 @@ LABELS=(
     "B (SyncPilot, 8 workers)"
     "C (SyncPilot, 10 workers)"
     "D (SyncPilot, 20 workers)"
+    "D-NOTP (SyncPilot-20W, No Two-Pool Gating)"
     "5B5L (SyncPilot, 10 workers, 5 Big + 5 Little)"
     "CFS-10W (SyncPilot, 10 workers, No Affinity)"
     "CFS-20W (SyncPilot, 20 workers, No Affinity)"
@@ -74,17 +77,18 @@ LABELS=(
     "CFS20-NOISE (CFS-20W under CPU Noise)"
     "D-NOISE-BRUTAL (SyncPilot-20W under 10 Noise Threads)"
     "CFS20-NOISE-BRUTAL (CFS-20W under 10 Noise Threads)"
+    "D-NOTP-NOISE-BRUTAL (SyncPilot-20W No Two-Pool, 10 Noise Threads)"
 )
 
 # SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
-SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot 5b5l cfs cfs naive syncpilot cfs syncpilot cfs)
+SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot notp 5b5l cfs cfs naive syncpilot cfs syncpilot cfs notp)
 
 # Catatan: nilai 150 di posisi SER/LIT tidak dipakai oleh run_scenario() untuk
 # runner "serial"/"serial_little" (mereka selalu memakai $TOTAL_FRAMES, bukan
 # $workers) — jangan baca kolom Speedup baris SER/LIT seolah itu jumlah worker.
-SCENARIO_WORKERS=(150 150 4 8 10 20 10 10 20 20 20 20 20 20)
+SCENARIO_WORKERS=(150 150 4 8 10 20 20 10 10 20 20 20 20 20 20 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1 1 1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1)
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
@@ -234,6 +238,8 @@ run_scenario() {
         SYNCPILOT_DISABLE_AFFINITY=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     elif [ "$runner" = "5b5l" ]; then
         SYNCPILOT_FORCE_5B5L=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
+    elif [ "$runner" = "notp" ]; then
+        SYNCPILOT_DISABLE_TWOPOOL=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     elif [ "$runner" = "naive" ]; then
         OMP_NUM_THREADS="$workers" "${SCRIPT_DIR}/fsrcnn_naive_openmp" "$INPUT_PATH" "$output_file" "$TOTAL_FRAMES" > /dev/null 2>&1
     else
@@ -315,6 +321,8 @@ for i in "${!SCENARIOS[@]}"; do
         echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}, SYNCPILOT_DISABLE_AFFINITY=1"
     elif [ "$runner" = "5b5l" ]; then
         echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}, SYNCPILOT_FORCE_5B5L=1"
+    elif [ "$runner" = "notp" ]; then
+        echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}, SYNCPILOT_DISABLE_TWOPOOL=1 (affinity ON, cost-gating OFF)"
     else
         echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}"
     fi
@@ -573,6 +581,8 @@ for i in "${!SCENARIOS[@]}"; do
         fi
     elif [ "$runner" = "5b5l" ]; then
         short_label="${scen} (5B+5L, 10w)"
+    elif [ "$runner" = "notp" ]; then
+        short_label="${scen} (NoTwoPool, ${workers}w)"
     else
         short_label="${scen} (SyncPilot, ${workers}w)"
     fi
