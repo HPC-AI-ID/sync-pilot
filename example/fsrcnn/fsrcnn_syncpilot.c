@@ -342,6 +342,7 @@ int main(int argc, char *argv[]) {
 
     // === Fitur Baru: IC-RCE & Asymmetric Core Affinity ===
     cfg.enable_calibration = 1; // Aktifkan Kalibrasi Awal (Ukur durasi per-layer pada frame 1)
+    cfg.enable_two_pool = 1;    // Pisahkan preferensi big/little worker berdasarkan IC-RCE
 
 #ifdef __linux__
     cfg.enable_affinity = 1;    // Aktifkan Core Pinning otomatis di Linux
