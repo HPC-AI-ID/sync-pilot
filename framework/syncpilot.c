@@ -505,14 +505,25 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
             }
         }
 
+        for (int i = 0; i < c->num_workers && i < MAX_CORES; i++) {
+            if (num_big > 0 && i < num_big) {
+                worker_core_classes[i] = 1;
+            } else if (num_little > 0) {
+                worker_core_classes[i] = 0;
+            }
+        }
+
+        // Guard: two_pool hanya bermakna bila kedua kelas hadir
         int n_big_w = 0, n_lit_w = 0;
         for (int i = 0; i < c->num_workers && i < MAX_CORES; i++) {
-            if (worker_core_classes[i] == 1) n_big_w++;
+            if      (worker_core_classes[i] == 1) n_big_w++;
             else if (worker_core_classes[i] == 0) n_lit_w++;
         }
         if (n_big_w == 0 || n_lit_w == 0) {
             eng->config.enable_two_pool = 0;
             printf("[INFO] two_pool dinonaktifkan: hanya satu kelas core (%dB/%dL).\n", n_big_w, n_lit_w);
+        } else {
+            printf("[INFO] two_pool aktif: %dB/%dL.\n", n_big_w, n_lit_w);
         }
     }
 #endif
@@ -566,32 +577,24 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
 
 
 void pipeline_feed(PipelineEngine *engine, int id, void *raw_data) {
-     PipelineTask *t = (PipelineTask*)malloc(sizeof(PipelineTask));
-     t->task_id = id;
-     t->current_stage = 0;
-     t->data = raw_data;
+    PipelineTask *t = malloc(sizeof(PipelineTask));
+    t->task_id = id; t->current_stage = 0; t->data = raw_data;
 
-     // Push ke gerbang tol tahapan awal (Stage-0), Push ini blocking via Cond klo antrian penuh. 
-     while(1) {
-         StageQueue *sq = &engine->stage_qs[0];
-         pthread_mutex_lock(&sq->lock);
-         int pushed = sq_push(sq, t);
-         if (!pushed) {
-             pthread_mutex_lock(&engine->lock);
-         }
-         pthread_mutex_unlock(&sq->lock);
+    while (1) {
+        pthread_mutex_lock(&engine->lock);      // urutan konsisten: engine dulu
+        StageQueue *sq = &engine->stage_qs[0];
+        pthread_mutex_lock(&sq->lock);
+        int pushed = sq_push(sq, t);
+        pthread_mutex_unlock(&sq->lock);
 
-         if (pushed) {
-             break;
-         }
-
-         pthread_cond_wait(&engine->cond_space, &engine->lock);
-         pthread_mutex_unlock(&engine->lock);
-     }
-
-     pthread_mutex_lock(&engine->lock);
-     signal_work_locked(engine);
-     pthread_mutex_unlock(&engine->lock);
+        if (pushed) {
+            signal_work_locked(engine);
+            pthread_mutex_unlock(&engine->lock);
+            return;
+        }
+        pthread_cond_wait(&engine->cond_space, &engine->lock);
+        pthread_mutex_unlock(&engine->lock);
+    }
 }
 
 
