@@ -522,6 +522,10 @@ PipelineEngine* pipeline_start(PipelineConfig *c) {
         if (n_big_w == 0 || n_lit_w == 0) {
             eng->config.enable_two_pool = 0;
             printf("[INFO] two_pool dinonaktifkan: hanya satu kelas core (%dB/%dL).\n", n_big_w, n_lit_w);
+        } else if (!eng->config.enable_two_pool) {
+            // Sengaja dimatikan oleh pemanggil (mis. ablasi cost-gating), bukan
+            // karena topologi — jangan laporkan sebagai aktif.
+            printf("[INFO] two_pool dimatikan oleh konfigurasi: %dB/%dL, affinity tetap aktif.\n", n_big_w, n_lit_w);
         } else {
             printf("[INFO] two_pool aktif: %dB/%dL.\n", n_big_w, n_lit_w);
         }

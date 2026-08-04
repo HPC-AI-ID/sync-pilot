@@ -10,3 +10,6 @@ example/fsrcnn/output_scenario_B.yuv
 example/fsrcnn/output_scenario_C.yuv
 example/fsrcnn/output_scenario_D.yuv
 /example/phyton/venv
+
+# Direktori kerja aplikasi FSRCNN noise (comparison_noise.sh, skenario *_FSAPP<N>)
+example/fsrcnn/.fsrcnn_noise_work/
