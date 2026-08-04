@@ -11,6 +11,11 @@
 #   2. *_FSAPP<N>               : N aplikasi FSRCNN utuh berjalan bersamaan
 #      (N = 2..5) sebagai proses tetangga yang dijadwalkan CFS.
 #
+# Tiap tingkat noise dijalankan dengan tiga konfigurasi penjadwalan:
+#   D_*      = SyncPilot penuh (affinity IC-RCE + two-pool gating)
+#   D_NOTP_* = SyncPilot tanpa two-pool (SYNCPILOT_DISABLE_TWOPOOL=1, affinity ON)
+#   CFS20_*  = tanpa affinity sama sekali (SYNCPILOT_DISABLE_AFFINITY=1)
+#
 # Usage:
 #   bash comparison.sh              # build lalu jalankan benchmark penuh
 #   bash comparison.sh --build-only # hanya build/cache executable, tanpa eksekusi
@@ -75,38 +80,52 @@ NOISE_FSRCNN_OUT="${NOISE_FSRCNN_OUT:-/dev/null}"
 # mempertahankan performa saat bersaing dengan aplikasi lain yang dijadwalkan CFS.
 
 # Skenario Percobaan
+# Tiap tingkat noise diuji dengan tiga konfigurasi penjadwalan supaya ablasinya
+# lengkap: SyncPilot penuh (affinity + two-pool gating), SyncPilot tanpa two-pool
+# (affinity tetap ON, gating berbasis biaya IC-RCE OFF), dan CFS murni.
 SCENARIOS=(
     "SER"
     "D_NOISE"
+    "D_NOTP_NOISE"
     "CFS20_NOISE"
     "D_NOISE_BRUTAL"
+    "D_NOTP_NOISE_BRUTAL"
     "CFS20_NOISE_BRUTAL"
 )
 
 LABELS=(
     "Serial (fsrcnn_serial, big core pinned)"
     "D-NOISE (SyncPilot-20W under 4 Noise Threads)"
+    "D-NOTP-NOISE (SyncPilot-20W No Two-Pool, 4 Noise Threads)"
     "CFS20-NOISE (CFS-20W under 4 Noise Threads)"
     "D-NOISE-BRUTAL (SyncPilot-20W under 10 Noise Threads)"
+    "D-NOTP-NOISE-BRUTAL (SyncPilot-20W No Two-Pool, 10 Noise Threads)"
     "CFS20-NOISE-BRUTAL (CFS-20W under 10 Noise Threads)"
 )
 
 # SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
-SCENARIO_RUNNERS=(serial syncpilot cfs syncpilot cfs)
+SCENARIO_RUNNERS=(serial syncpilot notp cfs syncpilot notp cfs)
 
 # Catatan: nilai 150 di posisi SER tidak dipakai oleh run_scenario() untuk
 # runner "serial" (selalu memakai $TOTAL_FRAMES, bukan $workers) — jangan baca
 # kolom Speedup baris SER seolah itu jumlah worker.
-SCENARIO_WORKERS=(150 20 20 20 20)
+SCENARIO_WORKERS=(150 20 20 20 20 20 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1)
 
-# Tambahkan pasangan skenario SyncPilot vs CFS untuk tiap jumlah aplikasi FSRCNN
-# bersamaan. Dibuat lewat loop supaya rentang 2..5 cukup diubah di satu tempat.
+# Tambahkan trio skenario SyncPilot / SyncPilot-tanpa-two-pool / CFS untuk tiap
+# jumlah aplikasi FSRCNN bersamaan. Dibuat lewat loop supaya rentang 2..5 cukup
+# diubah di satu tempat.
 for n_app in "${FSAPP_NOISE_COUNTS[@]}"; do
     SCENARIOS+=("D_FSAPP${n_app}")
     LABELS+=("D-FSAPP${n_app} (SyncPilot-20W + ${n_app} FSRCNN apps)")
     SCENARIO_RUNNERS+=("syncpilot")
+    SCENARIO_WORKERS+=(20)
+    SCENARIO_INNER_THREADS+=(1)
+
+    SCENARIOS+=("D_NOTP_FSAPP${n_app}")
+    LABELS+=("D-NOTP-FSAPP${n_app} (SyncPilot-20W No Two-Pool + ${n_app} FSRCNN apps)")
+    SCENARIO_RUNNERS+=("notp")
     SCENARIO_WORKERS+=(20)
     SCENARIO_INNER_THREADS+=(1)
 
@@ -368,6 +387,8 @@ run_scenario() {
         SYNCPILOT_DISABLE_AFFINITY=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     elif [ "$runner" = "5b5l" ]; then
         SYNCPILOT_FORCE_5B5L=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
+    elif [ "$runner" = "notp" ]; then
+        SYNCPILOT_DISABLE_TWOPOOL=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" "$INPUT_PATH" "$output_file" "$workers" > /dev/null 2>&1
     elif [ "$runner" = "naive" ]; then
         OMP_NUM_THREADS="$workers" "${SCRIPT_DIR}/fsrcnn_naive_openmp" "$INPUT_PATH" "$output_file" "$TOTAL_FRAMES" > /dev/null 2>&1
     else
@@ -451,6 +472,8 @@ for i in "${!SCENARIOS[@]}"; do
         echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}, SYNCPILOT_DISABLE_AFFINITY=1"
     elif [ "$runner" = "5b5l" ]; then
         echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}, SYNCPILOT_FORCE_5B5L=1"
+    elif [ "$runner" = "notp" ]; then
+        echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}, SYNCPILOT_DISABLE_TWOPOOL=1 (affinity ON, cost-gating OFF)"
     else
         echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}"
     fi
@@ -726,6 +749,8 @@ for i in "${!SCENARIOS[@]}"; do
         fi
     elif [ "$runner" = "5b5l" ]; then
         short_label="${scen} (5B+5L, 10w)"
+    elif [ "$runner" = "notp" ]; then
+        short_label="${scen} (NoTwoPool, ${workers}w)"
     else
         short_label="${scen} (SyncPilot, ${workers}w)"
     fi
