@@ -1,0 +1,290 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 57.61      5.87     5.87     8365     0.70     0.71  deconv
+ 21.39      8.05     2.18   294869     0.01     0.01  frame_dummy
+  5.50      8.61     0.56      150     3.73     8.67  layer7
+  4.91      9.11     0.50      149     3.36    43.17  layer8
+  3.83      9.50     0.39      148     2.64     2.64  layer1
+  1.96      9.70     0.20      150     1.33     6.28  layer2
+  1.96      9.90     0.20      147     1.36     2.44  layer4
+  1.28     10.03     0.13      150     0.87     1.93  layer6
+  0.98     10.13     0.10      148     0.68     1.75  layer5
+  0.59     10.19     0.06      150     0.40     1.46  layer3
+  0.00     10.19     0.00     1422     0.00     0.00  system_consumer_thread
+  0.00     10.19     0.00      150     0.00     6.28  cb_layer2
+  0.00     10.19     0.00      150     0.00     1.46  cb_layer3
+  0.00     10.19     0.00      150     0.00     2.39  cb_layer4
+  0.00     10.19     0.00      150     0.00     1.73  cb_layer5
+  0.00     10.19     0.00      150     0.00     1.93  cb_layer6
+  0.00     10.19     0.00      150     0.00     8.67  cb_layer7
+  0.00     10.19     0.00      149     0.00     2.62  cb_layer1
+  0.00     10.19     0.00      149     0.00    43.17  cb_layer8
+  0.00     10.19     0.00      149     0.00     0.00  pipeline_feed
+  0.00     10.19     0.00      148     0.00     0.00  fsrcnn_consumer_writer
+  0.00     10.19     0.00        1     0.00     0.00  pipeline_close_input
+  0.00     10.19     0.00        1     0.00     0.00  pipeline_destroy
+  0.00     10.19     0.00        1     0.00     0.00  pipeline_get_stage_costs
+  0.00     10.19     0.00        1     0.00     0.00  pipeline_is_calibrated
+  0.00     10.19     0.00        1     0.00     0.00  pipeline_start
+  0.00     10.19     0.00        1     0.00     0.00  pipeline_wait
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 4 byte(s) for 0.10% of 10.19 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]    100.0    0.00   10.19                 system_worker_thread [1]
+                0.00    6.43     149/149         cb_layer8 [2]
+                0.00    1.30     150/150         cb_layer7 [6]
+                0.00    0.94     150/150         cb_layer2 [8]
+                0.00    0.39     149/149         cb_layer1 [10]
+                0.00    0.36     150/150         cb_layer4 [12]
+                0.00    0.29     150/150         cb_layer6 [14]
+                0.00    0.26     150/150         cb_layer5 [16]
+                0.00    0.22     150/150         cb_layer3 [18]
+                0.00    0.00    1422/1422        system_consumer_thread [20]
+-----------------------------------------------
+                0.00    6.43     149/149         system_worker_thread [1]
+[2]     63.1    0.00    6.43     149         cb_layer8 [2]
+                0.50    5.93     149/149         layer8 [3]
+-----------------------------------------------
+                0.50    5.93     149/149         cb_layer8 [2]
+[3]     63.1    0.50    5.93     149         layer8 [3]
+                5.87    0.06    8365/8365        deconv [4]
+-----------------------------------------------
+                5.87    0.06    8365/8365        layer8 [3]
+[4]     58.2    5.87    0.06    8365         deconv [4]
+                0.06    0.00    8348/294869      frame_dummy [5]
+-----------------------------------------------
+                               85526             frame_dummy [5]
+                0.06    0.00    8348/294869      deconv [4]
+                0.16    0.00   21476/294869      layer4 [13]
+                0.16    0.00   21490/294869      layer6 [15]
+                0.16    0.00   21495/294869      layer5 [17]
+                0.16    0.00   21500/294869      layer3 [19]
+                0.74    0.00  100246/294869      layer7 [7]
+                0.74    0.00  100314/294869      layer2 [9]
+[5]     21.4    2.18    0.00  294869+85526   frame_dummy [5]
+                               85526             frame_dummy [5]
+-----------------------------------------------
+                0.00    1.30     150/150         system_worker_thread [1]
+[6]     12.8    0.00    1.30     150         cb_layer7 [6]
+                0.56    0.74     150/150         layer7 [7]
+-----------------------------------------------
+                0.56    0.74     150/150         cb_layer7 [6]
+[7]     12.8    0.56    0.74     150         layer7 [7]
+                0.74    0.00  100246/294869      frame_dummy [5]
+-----------------------------------------------
+                0.00    0.94     150/150         system_worker_thread [1]
+[8]      9.2    0.00    0.94     150         cb_layer2 [8]
+                0.20    0.74     150/150         layer2 [9]
+-----------------------------------------------
+                0.20    0.74     150/150         cb_layer2 [8]
+[9]      9.2    0.20    0.74     150         layer2 [9]
+                0.74    0.00  100314/294869      frame_dummy [5]
+-----------------------------------------------
+                0.00    0.39     149/149         system_worker_thread [1]
+[10]     3.8    0.00    0.39     149         cb_layer1 [10]
+                0.39    0.00     148/148         layer1 [11]
+-----------------------------------------------
+                0.39    0.00     148/148         cb_layer1 [10]
+[11]     3.8    0.39    0.00     148         layer1 [11]
+-----------------------------------------------
+                0.00    0.36     150/150         system_worker_thread [1]
+[12]     3.5    0.00    0.36     150         cb_layer4 [12]
+                0.20    0.16     147/147         layer4 [13]
+-----------------------------------------------
+                0.20    0.16     147/147         cb_layer4 [12]
+[13]     3.5    0.20    0.16     147         layer4 [13]
+                0.16    0.00   21476/294869      frame_dummy [5]
+-----------------------------------------------
+                0.00    0.29     150/150         system_worker_thread [1]
+[14]     2.8    0.00    0.29     150         cb_layer6 [14]
+                0.13    0.16     150/150         layer6 [15]
+-----------------------------------------------
+                0.13    0.16     150/150         cb_layer6 [14]
+[15]     2.8    0.13    0.16     150         layer6 [15]
+                0.16    0.00   21490/294869      frame_dummy [5]
+-----------------------------------------------
+                0.00    0.26     150/150         system_worker_thread [1]
+[16]     2.5    0.00    0.26     150         cb_layer5 [16]
+                0.10    0.16     148/148         layer5 [17]
+-----------------------------------------------
+                0.10    0.16     148/148         cb_layer5 [16]
+[17]     2.5    0.10    0.16     148         layer5 [17]
+                0.16    0.00   21495/294869      frame_dummy [5]
+-----------------------------------------------
+                0.00    0.22     150/150         system_worker_thread [1]
+[18]     2.1    0.00    0.22     150         cb_layer3 [18]
+                0.06    0.16     150/150         layer3 [19]
+-----------------------------------------------
+                0.06    0.16     150/150         cb_layer3 [18]
+[19]     2.1    0.06    0.16     150         layer3 [19]
+                0.16    0.00   21500/294869      frame_dummy [5]
+-----------------------------------------------
+                0.00    0.00    1422/1422        system_worker_thread [1]
+[20]     0.0    0.00    0.00    1422         system_consumer_thread [20]
+                0.00    0.00     148/148         fsrcnn_consumer_writer [22]
+-----------------------------------------------
+                0.00    0.00     149/149         main [39]
+[21]     0.0    0.00    0.00     149         pipeline_feed [21]
+-----------------------------------------------
+                0.00    0.00     148/148         system_consumer_thread [20]
+[22]     0.0    0.00    0.00     148         fsrcnn_consumer_writer [22]
+-----------------------------------------------
+                0.00    0.00       1/1           main [39]
+[23]     0.0    0.00    0.00       1         pipeline_close_input [23]
+-----------------------------------------------
+                0.00    0.00       1/1           main [39]
+[24]     0.0    0.00    0.00       1         pipeline_destroy [24]
+-----------------------------------------------
+                0.00    0.00       1/1           main [39]
+[25]     0.0    0.00    0.00       1         pipeline_get_stage_costs [25]
+-----------------------------------------------
+                0.00    0.00       1/1           main [39]
+[26]     0.0    0.00    0.00       1         pipeline_is_calibrated [26]
+-----------------------------------------------
+                0.00    0.00       1/1           main [39]
+[27]     0.0    0.00    0.00       1         pipeline_start [27]
+-----------------------------------------------
+                0.00    0.00       1/1           main [39]
+[28]     0.0    0.00    0.00       1         pipeline_wait [28]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+  [10] cb_layer1               [5] frame_dummy             [3] layer8
+   [8] cb_layer2              [22] fsrcnn_consumer_writer [23] pipeline_close_input
+  [18] cb_layer3              [11] layer1                 [24] pipeline_destroy
+  [12] cb_layer4               [9] layer2                 [21] pipeline_feed
+  [16] cb_layer5              [19] layer3                 [25] pipeline_get_stage_costs
+  [14] cb_layer6              [13] layer4                 [26] pipeline_is_calibrated
+   [6] cb_layer7              [17] layer5                 [27] pipeline_start
+   [2] cb_layer8              [15] layer6                 [28] pipeline_wait
+   [4] deconv                  [7] layer7                 [20] system_consumer_thread
