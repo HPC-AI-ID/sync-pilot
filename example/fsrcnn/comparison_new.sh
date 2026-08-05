@@ -5,9 +5,24 @@
 # Menguji skenario FSRCNN dengan input yang sama,
 # mengukur waktu eksekusi, throughput, dan PSNR.
 #
+# Skenario noise latar ada dua jenis:
+#   1. *_NOISE / *_NOISE_BRUTAL : noise sintetis (noise_generator, spin-loop ALU)
+#      dengan 4 dan 10 thread.
+#   2. *_FSAPP<N>               : N aplikasi FSRCNN utuh berjalan bersamaan
+#      (N = 2..5) sebagai proses tetangga yang dijadwalkan CFS.
+#
+# Tiap tingkat noise dijalankan dengan tiga konfigurasi penjadwalan:
+#   D_*      = SyncPilot penuh (affinity IC-RCE + two-pool gating)
+#   D_NOTP_* = SyncPilot tanpa two-pool (SYNCPILOT_DISABLE_TWOPOOL=1, affinity ON)
+#   CFS20_*  = tanpa affinity sama sekali (SYNCPILOT_DISABLE_AFFINITY=1)
+#
 # Usage:
 #   bash comparison.sh              # build lalu jalankan benchmark penuh
 #   bash comparison.sh --build-only # hanya build/cache executable, tanpa eksekusi
+#
+# Env opsional:
+#   NOISE_FSRCNN_WORKERS=4          # worker per aplikasi FSRCNN noise
+#   NOISE_FSRCNN_OUT=/dev/null      # "file" agar aplikasi noise menulis YUV ke disk
 ###############################################################################
 
 set -e
@@ -39,6 +54,31 @@ TOTAL_FRAMES=150
 # Ukuran output YUV420p yang diharapkan untuk validasi cache ground truth
 EXPECTED_OUTPUT_SIZE=$((OUT_WIDTH * OUT_HEIGHT * 3 / 2 * TOTAL_FRAMES))
 
+# ===================== KONFIGURASI NOISE APLIKASI FSRCNN =====================
+# Selain noise sintetis (noise_generator = spin-loop ALU murni), skenario *_FSAPP<N>
+# memberi beban latar berupa N *aplikasi FSRCNN lain* yang berjalan bersamaan.
+# Ini noise yang jauh lebih realistis untuk paper: proses tetangga punya footprint
+# memori, pola akses cache, dan struktur multithread yang sama dengan aplikasi yang
+# diukur — bukan sekadar membakar ALU.
+#
+# Rentang jumlah aplikasi bersamaan yang diuji (2..5 aplikasi).
+FSAPP_NOISE_COUNTS=(2 3 4 5)
+
+# Worker per aplikasi noise. 4 worker x 2..5 aplikasi = 8..20 thread tambahan,
+# sebanding dengan noise sintetis 4 thread (NOISE) s/d 10 thread (BRUTAL).
+NOISE_FSRCNN_WORKERS="${NOISE_FSRCNN_WORKERS:-4}"
+
+# Output aplikasi noise dibuang ke /dev/null secara default supaya eksperimen
+# mengisolasi kontensi CPU/cache, bukan bandwidth storage (5 aplikasi x 22 MB per
+# iterasi akan mendominasi hasil di board dengan eMMC lambat). Set ke "file" jika
+# ingin aplikasi noise benar-benar menulis YUV ke disk seperti aplikasi terukur.
+NOISE_FSRCNN_OUT="${NOISE_FSRCNN_OUT:-/dev/null}"
+
+# Aplikasi noise dijalankan sebagai aplikasi biasa di mata OS: affinity SyncPilot
+# dimatikan (SYNCPILOT_DISABLE_AFFINITY=1) supaya proses tetangga tidak ikut
+# "mengklaim" big core lewat IC-RCE. Yang diuji adalah kemampuan aplikasi TERUKUR
+# mempertahankan performa saat bersaing dengan aplikasi lain yang dijadwalkan CFS.
+
 # Skenario Percobaan
 SCENARIOS=(
     # "BASE"
@@ -54,10 +94,11 @@ SCENARIOS=(
     "CFS20"
     "NAIVE"
     "D_NOISE"
+    "D_NOTP_NOISE"
     "CFS20_NOISE"
     "D_NOISE_BRUTAL"
-    "CFS20_NOISE_BRUTAL"
     "D_NOTP_NOISE_BRUTAL"
+    "CFS20_NOISE_BRUTAL"
 )
 
 LABELS=(
@@ -73,22 +114,46 @@ LABELS=(
     "CFS-10W (SyncPilot, 10 workers, No Affinity)"
     "CFS-20W (SyncPilot, 20 workers, No Affinity)"
     "NAIVE (Naive OpenMP 20W, Race Condition)"
-    "D-NOISE (SyncPilot-20W under CPU Noise)"
-    "CFS20-NOISE (CFS-20W under CPU Noise)"
+    "D-NOISE (SyncPilot-20W under 4 Noise Threads)"
+    "D-NOTP-NOISE (SyncPilot-20W No Two-Pool, 4 Noise Threads)"
+    "CFS20-NOISE (CFS-20W under 4 Noise Threads)"
     "D-NOISE-BRUTAL (SyncPilot-20W under 10 Noise Threads)"
-    "CFS20-NOISE-BRUTAL (CFS-20W under 10 Noise Threads)"
     "D-NOTP-NOISE-BRUTAL (SyncPilot-20W No Two-Pool, 10 Noise Threads)"
+    "CFS20-NOISE-BRUTAL (CFS-20W under 10 Noise Threads)"
 )
 
 # SCENARIO_RUNNERS=(baseline serial serial_little syncpilot syncpilot syncpilot syncpilot)
-SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot notp 5b5l cfs cfs naive syncpilot cfs syncpilot cfs notp)
+SCENARIO_RUNNERS=(serial serial_little syncpilot syncpilot syncpilot syncpilot notp 5b5l cfs cfs naive syncpilot notp cfs syncpilot notp cfs)
 
 # Catatan: nilai 150 di posisi SER/LIT tidak dipakai oleh run_scenario() untuk
 # runner "serial"/"serial_little" (mereka selalu memakai $TOTAL_FRAMES, bukan
 # $workers) — jangan baca kolom Speedup baris SER/LIT seolah itu jumlah worker.
-SCENARIO_WORKERS=(150 150 4 8 10 20 20 10 10 20 20 20 20 20 20 20)
+SCENARIO_WORKERS=(150 150 4 8 10 20 20 10 10 20 20 20 20 20 20 20 20)
 
-SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1)
+SCENARIO_INNER_THREADS=(1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1)
+
+# Tambahkan trio skenario SyncPilot / SyncPilot-tanpa-two-pool / CFS untuk tiap
+# jumlah aplikasi FSRCNN bersamaan. Dibuat lewat loop supaya rentang 2..5 cukup
+# diubah di satu tempat.
+for n_app in "${FSAPP_NOISE_COUNTS[@]}"; do
+    SCENARIOS+=("D_FSAPP${n_app}")
+    LABELS+=("D-FSAPP${n_app} (SyncPilot-20W + ${n_app} FSRCNN apps)")
+    SCENARIO_RUNNERS+=("syncpilot")
+    SCENARIO_WORKERS+=(20)
+    SCENARIO_INNER_THREADS+=(1)
+
+    SCENARIOS+=("D_NOTP_FSAPP${n_app}")
+    LABELS+=("D-NOTP-FSAPP${n_app} (SyncPilot-20W No Two-Pool + ${n_app} FSRCNN apps)")
+    SCENARIO_RUNNERS+=("notp")
+    SCENARIO_WORKERS+=(20)
+    SCENARIO_INNER_THREADS+=(1)
+
+    SCENARIOS+=("CFS20_FSAPP${n_app}")
+    LABELS+=("CFS20-FSAPP${n_app} (CFS-20W + ${n_app} FSRCNN apps)")
+    SCENARIO_RUNNERS+=("cfs")
+    SCENARIO_WORKERS+=(20)
+    SCENARIO_INNER_THREADS+=(1)
+done
 
 # ===================== PANDUAN FOTO DAYA =====================
 print_power_photo_guide() {
@@ -218,6 +283,109 @@ get_file_size() {
     stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo "0"
 }
 
+# ---------- NOISE: APLIKASI FSRCNN BERJALAN BERSAMAAN ----------
+# Tiap aplikasi noise dijalankan di direktori kerjanya sendiri (berisi symlink ke
+# bobot/bias) supaya:
+#   - file log internal (logs/fsrcnn_syncpilot.txt) tidak saling menimpa dengan
+#     log proses yang sedang diukur,
+#   - proses noise mudah dikenali & dimatikan lewat pola path-nya.
+NOISE_WORK_DIR="${SCRIPT_DIR}/.fsrcnn_noise_work"
+FSAPP_STOP_FLAG="${NOISE_WORK_DIR}/stop.flag"
+declare -a FSAPP_PIDS=()
+
+prepare_fsapp_workdir() {
+    local idx="$1"
+    local dir="${NOISE_WORK_DIR}/app${idx}"
+    mkdir -p "$dir"
+    local f
+    for f in "${SCRIPT_DIR}"/weights_layer*.txt "${SCRIPT_DIR}"/biasess_layer*.txt; do
+        ln -sf "$f" "${dir}/$(basename "$f")"
+    done
+    printf '%s' "$dir"
+}
+
+start_fsapp_noise() {
+    local count="$1"
+    mkdir -p "$NOISE_WORK_DIR"
+    rm -f "$FSAPP_STOP_FLAG"
+    FSAPP_PIDS=()
+
+    local n dir out_path
+    for ((n = 1; n <= count; n++)); do
+        dir="$(prepare_fsapp_workdir "$n")"
+        # Path output SELALU berada di dalam direktori kerja noise — itu yang
+        # membuat proses noise bisa dikenali (pgrep/pkill) dan dibedakan dari
+        # proses terukur. Saat output dibuang, path tersebut dibuat sebagai
+        # symlink ke /dev/null, bukan diganti argumennya.
+        out_path="${dir}/out_noise.yuv"
+        rm -f "$out_path"
+        if [ "$NOISE_FSRCNN_OUT" = "/dev/null" ]; then
+            ln -s /dev/null "$out_path"
+        fi
+
+        # Satu aplikasi FSRCNN sekali jalan hanya ~detik, sedangkan skenario terukur
+        # butuh beban kontinu: dibungkus loop yang restart sampai stop flag muncul.
+        (
+            cd "$dir" || exit 1
+            while [ ! -f "$FSAPP_STOP_FLAG" ]; do
+                SYNCPILOT_DISABLE_AFFINITY=1 "${SCRIPT_DIR}/fsrcnn_syncpilot" \
+                    "$INPUT_PATH" "$out_path" "$NOISE_FSRCNN_WORKERS" > /dev/null 2>&1 || sleep 0.2
+            done
+        ) &
+        FSAPP_PIDS+=("$!")
+    done
+
+    # Beri waktu semua aplikasi noise memuat bobot dan mencapai steady-state.
+    sleep 3
+
+    local alive=0 pid
+    for pid in "${FSAPP_PIDS[@]}"; do
+        ps -p "$pid" > /dev/null 2>&1 && alive=$((alive + 1))
+    done
+    if [ "$alive" -lt "$count" ]; then
+        echo "     [ERROR] Hanya ${alive}/${count} loop aplikasi FSRCNN noise yang hidup!" >&2
+        echo "             Skenario ini TIDAK VALID sebagai pengukuran noise." >&2
+    fi
+    if ! pgrep -f "${NOISE_WORK_DIR}/app" > /dev/null 2>&1; then
+        echo "     [ERROR] Tidak ada proses fsrcnn_syncpilot noise yang terdeteksi berjalan!" >&2
+        echo "             Cek bobot/bias di ${NOISE_WORK_DIR} dan binary fsrcnn_syncpilot." >&2
+    fi
+}
+
+fsapp_noise_alive() {
+    local pid
+    for pid in "${FSAPP_PIDS[@]}"; do
+        ps -p "$pid" > /dev/null 2>&1 || return 1
+    done
+    return 0
+}
+
+stop_fsapp_noise() {
+    [ "${#FSAPP_PIDS[@]}" -eq 0 ] && return 0
+
+    mkdir -p "$NOISE_WORK_DIR"
+    touch "$FSAPP_STOP_FLAG"
+    local pid
+    for pid in "${FSAPP_PIDS[@]}"; do
+        kill -9 "$pid" 2>/dev/null || true
+        wait "$pid" 2>/dev/null || true
+    done
+    # Loop shell sudah mati, tapi instance fsrcnn yang sedang berjalan masih anak
+    # proses lepas: dimatikan lewat pola direktori kerja noise (aman, tidak akan
+    # kena proses terukur yang output-nya output_scenario_*.yuv).
+    pkill -9 -f "${NOISE_WORK_DIR}/app" 2>/dev/null || true
+    FSAPP_PIDS=()
+    rm -f "${NOISE_WORK_DIR}"/app*/out_noise.yuv
+}
+
+# Jaring pengaman: kalau script dihentikan (Ctrl-C/error), noise tidak boleh
+# tertinggal membebani mesin dan mengotori pengukuran berikutnya.
+cleanup_all_noise() {
+    stop_fsapp_noise 2>/dev/null || true
+    pkill -9 -f "${SCRIPT_DIR}/noise_generator" 2>/dev/null || true
+}
+trap cleanup_all_noise EXIT INT TERM
+
 run_scenario() {
     local runner="$1"
     local output_file="$2"
@@ -326,6 +494,9 @@ for i in "${!SCENARIOS[@]}"; do
     else
         echo "     Config: executable=fsrcnn_syncpilot, workers=${workers}"
     fi
+    if [[ "$scen" == *"_FSAPP"* ]]; then
+        echo "     Noise : ${scen##*_FSAPP} aplikasi FSRCNN bersamaan, ${NOISE_FSRCNN_WORKERS} worker/aplikasi, output=${NOISE_FSRCNN_OUT}"
+    fi
     echo "---------------------------------------------------------------------"
     
     total_time=0
@@ -336,7 +507,12 @@ for i in "${!SCENARIOS[@]}"; do
 
     # START NOISE IF REQUIRED
     NOISE_PID=""
-    if [[ "$scen" == *"_NOISE"* ]]; then
+    FSAPP_COUNT=0
+    if [[ "$scen" == *"_FSAPP"* ]]; then
+        FSAPP_COUNT="${scen##*_FSAPP}"
+        echo "     [!] Menjalankan ${FSAPP_COUNT} aplikasi FSRCNN secara bersamaan sebagai noise..."
+        start_fsapp_noise "$FSAPP_COUNT"
+    elif [[ "$scen" == *"_NOISE"* ]]; then
         NOISE_THREADS=4
         if [[ "$scen" == *"_BRUTAL"* ]]; then
             NOISE_THREADS=10
@@ -357,6 +533,9 @@ for i in "${!SCENARIOS[@]}"; do
         # Verifikasi noise generator masih hidup di setiap run, bukan hanya di awal
         if [[ -n "$NOISE_PID" ]] && ! ps -p "$NOISE_PID" > /dev/null 2>&1; then
             echo "     [ERROR] noise_generator (PID $NOISE_PID) mati sebelum run ${run}/${NUM_RUNS}! Sisa run TIDAK dinaungi noise." >&2
+        fi
+        if [ "$FSAPP_COUNT" -gt 0 ] && ! fsapp_noise_alive; then
+            echo "     [ERROR] Sebagian loop aplikasi FSRCNN noise mati sebelum run ${run}/${NUM_RUNS}! Run ini TIDAK dinaungi ${FSAPP_COUNT} aplikasi penuh." >&2
         fi
 
         print_photo_start "$label" "$run" "$NUM_RUNS"
@@ -387,6 +566,12 @@ for i in "${!SCENARIOS[@]}"; do
         kill -9 "$NOISE_PID" 2>/dev/null || true
         wait "$NOISE_PID" 2>/dev/null || true
         pkill -9 -f "${SCRIPT_DIR}/noise_generator" 2>/dev/null || true
+    fi
+
+    # STOP FSRCNN APP NOISE IF RUNNING
+    if [ "$FSAPP_COUNT" -gt 0 ]; then
+        echo "     [!] Mematikan ${FSAPP_COUNT} aplikasi FSRCNN noise..."
+        stop_fsapp_noise
     fi
 
     # Hitung rata-rata/min/max/std dev HANYA dari run steady-state (run 1 dibuang)
